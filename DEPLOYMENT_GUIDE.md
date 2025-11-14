@@ -15,84 +15,61 @@ Before starting, ensure you have:
 
 ---
 
-## Part 1: MongoDB Compass (Local Database)
+## Part 1: MongoDB Atlas (Cloud Database) — Recommended
 
-### Step 1.1: Install MongoDB Community Edition
+> Note: If you still want to run a local MongoDB for development, you can use MongoDB Compass or Community Edition. This section focuses on MongoDB Atlas (cloud) which is recommended for production and for Render to access.
 
-**On Linux:**
-```bash
-# Install MongoDB
-sudo apt-get update
-sudo apt-get install -y mongodb-org
+### Step 1.1: Create a MongoDB Atlas Account
 
-# Start MongoDB service
-sudo systemctl start mongod
+1. Go to https://www.mongodb.com/cloud/atlas and sign up (free M0 tier is fine).
+2. Create a new project and then a free cluster (M0).
 
-# Verify it's running
-sudo systemctl status mongod
+### Step 1.2: Create a Database User
+
+1. In Atlas, go to **Database Access** → **Add New Database User**.
+2. Create a user (example: `appuser`) and set a strong password.
+3. Assign the `readWrite` role on the database or use the built-in roles.
+
+### Step 1.3: Network Access (IP Whitelist)
+
+1. Go to **Network Access** → **Add IP Address**.
+2. For testing you can add `0.0.0.0/0` (allows all IPs) — **not recommended for production**; otherwise add your server IP or Render's IP ranges.
+
+### Step 1.4: Get Your Connection String
+
+1. In Atlas, go to **Clusters** → **Connect** → **Connect your application**.
+2. Copy the connection string for Node.js and replace `<password>` with the password you created and set the default database name.
+
+Example connection string (replace placeholders):
+```env
+MONGODB_URI=mongodb+srv://appuser:YourPassword@cluster0.abcd123.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority
 ```
-
-**On macOS:**
-```bash
-# Using Homebrew
-brew tap mongodb/brew
-brew install mongodb-community
-
-# Start MongoDB
-brew services start mongodb-community
-```
-
-**On Windows:**
-- Download from [MongoDB Download Center](https://www.mongodb.com/try/download/community)
-- Follow the installer (it starts the service automatically)
-
-### Step 1.2: Verify MongoDB is Running
-
-```bash
-# Test connection
-mongosh
-# You should see a prompt like: test>
-# Type: exit
-```
-
-### Step 1.3: Open MongoDB Compass
-
-1. Launch MongoDB Compass (desktop app)
-2. Connection string should auto-populate: `mongodb://localhost:27017`
-3. Click "Connect"
-4. You should see the MongoDB interface with databases
-
-### Step 1.4: Create Your Database
-
-1. In Compass, click the **+** icon next to "Databases"
-2. Database name: `happiness-therapy-app`
-3. Collection name: `users`
-4. Click "Create Database"
-5. Create additional collections:
-   - `bookings`
-   - `sessions` (optional, for meeting data)
 
 ### Step 1.5: Update Server Configuration
 
-Edit `server/.env`:
+Edit `server/.env` and add the Atlas URI and production secrets:
 
 ```env
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/happiness-therapy-app
+# MongoDB (Atlas)
+MONGODB_URI=mongodb+srv://appuser:YourPassword@cluster0.abcd123.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority
 
 # JWT
 JWT_SECRET=your-secret-key-here-change-this-in-production
 
 # Server
 PORT=4000
-NODE_ENV=development
+NODE_ENV=production
 
 # Therapists and Clients
 THERAPIST_EMAIL=hapiness@example.com
 ADMIN_EMAIL=mwaniki@example.com
 ```
 
+> Important: Do not commit `.env` to Git. Instead, add the same `MONGODB_URI` and `JWT_SECRET` to Render environment variables.
+
 ### Step 1.6: Seed Initial Data
+
+You can seed the initial admin and therapist users once your server can connect to Atlas. Run these commands locally (with `server/.env` configured) or via a temporary Render shell:
 
 ```bash
 cd server
@@ -109,6 +86,13 @@ node scripts/create_therapist.js
 ✓ Admin user created successfully
 ✓ Therapist user created successfully
 ```
+
+### Optional: Use MongoDB Compass to View Atlas Data
+
+If you prefer the Compass UI, you can connect Compass to your Atlas cluster:
+1. Open MongoDB Compass
+2. Use the Atlas connection string (choose "Connect with MongoDB Compass") and paste it into Compass
+3. Connect and browse your databases and collections
 
 ---
 
