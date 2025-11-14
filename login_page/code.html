@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#3B82F6",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111821",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col items-center justify-center bg-[linear-gradient(135deg,_#0A2E57_0%,_#041C34_100%)] dark group/design-root overflow-x-hidden p-4" style='font-family: Inter, "Noto Sans", sans-serif;'>
+<div class="w-full max-w-md rounded-xl border border-white/10 bg-white/10 p-8 shadow-2xl shadow-black/20 backdrop-blur-lg">
+<div class="flex flex-col items-center gap-6">
+<h1 class="text-white tracking-light text-[32px] font-bold leading-tight text-center">Welcome Back</h1>
+<div class="flex w-full flex-col gap-4">
+<label class="flex flex-col w-full">
+<p class="text-gray-200 text-base font-medium leading-normal pb-2">Email</p>
+<div class="relative flex w-full flex-1 items-center">
+<span class="material-symbols-outlined absolute left-4 text-gray-400">mail</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 h-14 pl-12 pr-4 text-base font-normal leading-normal transition-shadow" placeholder="you@example.com" type="email" value=""/>
+</div>
+</label>
+<label class="flex flex-col w-full">
+<p class="text-gray-200 text-base font-medium leading-normal pb-2">Password</p>
+<div class="relative flex w-full flex-1 items-center">
+<span class="material-symbols-outlined absolute left-4 text-gray-400">lock</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 border border-white/20 bg-black/20 h-14 pl-12 pr-12 text-base font-normal leading-normal transition-shadow" placeholder="Enter your password" type="password" value=""/>
+<button aria-label="Toggle password visibility" class="absolute right-4 text-gray-400 hover:text-white">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</label>
+</div>
+<a class="text-gray-400 hover:text-white text-sm font-normal leading-normal self-end underline transition-colors" href="#">Forgot Password?</a>
+<div class="flex w-full flex-col gap-4">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-[#062442]">
+<span class="truncate">Login</span>
+</button>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 flex-1 border border-white/30 bg-transparent text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[#062442]">
+<span class="truncate">Create Account</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

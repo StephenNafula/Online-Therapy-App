@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About Us</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#4A90E2",
+                "background-light": "#f6f7f8",
+                "background-dark": "#0A192F",
+                "primary-text": "#FFFFFF",
+                "secondary-text": "#C7D3E3",
+                "card-dark": "rgba(23, 37, 61, 0.5)",
+                "glow": "#9DF7E5"
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+              boxShadow: {
+                'glow-sm': '0 0 15px 0 rgba(157, 247, 229, 0.1)',
+                'glow-md': '0 0 25px 0 rgba(157, 247, 229, 0.15)',
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .glassmorphic {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 glassmorphic bg-background-dark/80">
+<div class="flex items-center p-4">
+<button class="text-primary-text flex size-10 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-primary-text text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">About Us</h1>
+</div>
+</header>
+<main class="flex-1">
+<!-- Hero Section -->
+<div class="@container">
+<div class="px-4 pt-8 pb-4">
+<div class="flex min-h-[400px] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 items-center justify-center p-4 rounded-xl shadow-lg" data-alt="Abstract gradient from deep navy to a soft cyan glow" style='background-image: linear-gradient(rgba(10, 25, 47, 0.4) 0%, rgba(10, 25, 47, 0.8) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBkYpp_u7KwhJbeHv1XmZ2yHyim_3riRLE6RgGrNz1UyEBcCHhVxflQRgBjfG5PAR01Dxq-upb3-KkFiuQN4Bg2f0hemZTn90u8IeMBf-7eirwJMJF5SQ5ZYc46wUx1nMtg_YOgwfBKHd-IdU1cyttr3KPDuE1ET8a4boDev82KPNIkLqq5Wbo__khbr8LaPr_SKksiL9Oybig9AgwrDFI9SADbZ6tGv00Mak_fAfozCSvsRQEwYDBRZjKOoRrkK0mz_uYi9OR_vA3x");'>
+<div class="flex flex-col gap-2 text-center">
+<h1 class="text-primary-text text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl">
+                                Engineering a Better State of Mind
+                            </h1>
+<h2 class="text-secondary-text text-base font-normal leading-normal @[480px]:text-lg">
+                                We bridge technology and empathy to create a seamless support ecosystem for your well-being.
+                            </h2>
+</div>
+</div>
+</div>
+</div>
+<!-- Mission & Vision Section -->
+<div class="px-4">
+<h2 class="text-primary-text text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 pt-5">Our Mission &amp; Vision</h2>
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+<div class="flex flex-col items-stretch justify-start rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<h3 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Our Mission</h3>
+<p class="text-secondary-text text-base font-normal leading-normal mt-2">
+                            To empower individuals and organizations with seamless, on-demand support, making professional help universally accessible and stigma-free.
+                        </p>
+</div>
+<div class="flex flex-col items-stretch justify-start rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<h3 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Our Vision</h3>
+<p class="text-secondary-text text-base font-normal leading-normal mt-2">
+                            To create a future where technology fosters human connection and well-being, breaking down barriers to personal and professional growth.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Core Values Section -->
+<div class="px-4">
+<h2 class="text-primary-text text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 pt-8">Our Values</h2>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<div class="flex flex-col items-center text-center rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary mb-3">
+<span class="material-symbols-outlined text-glow">psychology</span>
+</div>
+<h4 class="text-primary-text font-bold text-md">Empathy</h4>
+<p class="text-secondary-text text-sm mt-1">Understanding and compassion are at the core of our support.</p>
+</div>
+<div class="flex flex-col items-center text-center rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary mb-3">
+<span class="material-symbols-outlined text-glow">lightbulb</span>
+</div>
+<h4 class="text-primary-text font-bold text-md">Innovation</h4>
+<p class="text-secondary-text text-sm mt-1">Continuously improving our platform with cutting-edge tech.</p>
+</div>
+<div class="flex flex-col items-center text-center rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary mb-3">
+<span class="material-symbols-outlined text-glow">security</span>
+</div>
+<h4 class="text-primary-text font-bold text-md">Security</h4>
+<p class="text-secondary-text text-sm mt-1">Your privacy and data security are our top priorities.</p>
+</div>
+<div class="flex flex-col items-center text-center rounded-xl glassmorphic bg-card-dark p-6 shadow-glow-sm">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary mb-3">
+<span class="material-symbols-outlined text-glow">accessibility</span>
+</div>
+<h4 class="text-primary-text font-bold text-md">Accessibility</h4>
+<p class="text-secondary-text text-sm mt-1">Ensuring our services are available to everyone, everywhere.</p>
+</div>
+</div>
+</div>
+<!-- Team Members Section -->
+<div class="py-8">
+<h2 class="text-primary-text text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3">Meet The Team</h2>
+<div class="flex space-x-4 overflow-x-auto p-4 scrollbar-hide">
+<div class="flex-shrink-0 w-44 flex flex-col items-center text-center p-4 rounded-xl glassmorphic bg-card-dark shadow-glow-sm group">
+<img class="h-24 w-24 rounded-full object-cover border-2 border-primary transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105" data-alt="Profile picture of John Carter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHSd_KKiKDtUbU6CfnmkWdeDwXbGjHzlRtgcGk9eRphfx82oovu8_LnT5qtkkMt-rOmCfv5Ij2nEQOjOhsSgNKGInOGg-4zRKjvLyKREXjfgs6BK-rr1Srg1wz8Qc7Bfryp-dOCfJdBs2FvNJ2z8d8yiB-5J8vluwMd6yIkxwIwAC5usRAC379x-6sfDcHDUMJaOhLNlK49fScUcqjr2ZPKVIfenjCoIE1ugM6FDwktGUlL_nh3DAq4ggGLqCiyynV42zi3cOTgfyD"/>
+<h5 class="text-primary-text font-bold mt-3">John Carter</h5>
+<p class="text-secondary-text text-sm">Lead Therapist</p>
+</div>
+<div class="flex-shrink-0 w-44 flex flex-col items-center text-center p-4 rounded-xl glassmorphic bg-card-dark shadow-glow-sm group">
+<img class="h-24 w-24 rounded-full object-cover border-2 border-primary transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105" data-alt="Profile picture of Sarah Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6Y8Fjp5x7urQASOB3dgnCWz4m6_7f6mcSCGAlQsJV3LqZMABkotLuHadrxv-ZPGSiMq9a2NNevtxNiCqKZ_l-ABQIQz9kt5d6k7nIWW4lH_yxqA2wNTqOgLLEedJOX_OvNmwVTLPyekw4wkTvMEZxjwXKWmPkLUS0np_LUJogoCwemjTa9eK0LpHlMXbvk099tuLJ9TrzKbrP2GQY3eDdOcicUB0u2sv2NpSJiHpEBwcWyvbYJ-Iue8JuJ4C4YdKTXmpUpXp6adDW"/>
+<h5 class="text-primary-text font-bold mt-3">Sarah Chen</h5>
+<p class="text-secondary-text text-sm">Senior Engineer</p>
+</div>
+<div class="flex-shrink-0 w-44 flex flex-col items-center text-center p-4 rounded-xl glassmorphic bg-card-dark shadow-glow-sm group">
+<img class="h-24 w-24 rounded-full object-cover border-2 border-primary transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105" data-alt="Profile picture of Mike Rodriguez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClT-emx3ithc9iObNbvnY6lpU-1axOC5_rJyCSggoO_Mx0IN3WF4gE1sSw2kZhy700AiUANOXFxE29Xmlo-xmLkdj-Lwp3vaglOyxICOrqMUdDutS6TSBmW8lGGAi4hdLwCiUompzB6oPrparWeodRGl0kb8NcBTpjZU6Cx45iN0cJydC4skA_Fw7BizFPFTOEE0YWiyv81-3jmFxlXvcBvOBf8dA72jgCObOFHNe5ONh5RQnK6Z48ufiHbPg7VWOb0dzsSlE1NxUy"/>
+<h5 class="text-primary-text font-bold mt-3">Mike Rodriguez</h5>
+<p class="text-secondary-text text-sm">Product Manager</p>
+</div>
+<div class="flex-shrink-0 w-44 flex flex-col items-center text-center p-4 rounded-xl glassmorphic bg-card-dark shadow-glow-sm group">
+<img class="h-24 w-24 rounded-full object-cover border-2 border-primary transition-all duration-300 group-hover:shadow-glow-md group-hover:scale-105" data-alt="Profile picture of Emily Davis" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChfeJD_RNqaK0oQIKnUI6-E8Du9Y-9feRgtmqno93cVxWg60C1NO5ePCimzXUjW1LK8J3A_yci58bQhPDzmI8-dlUj_oW0S3Gay7wPyLUc4Y_8YpvlOVIlnIvGTwyQ3wfIpOK4dEMEu24EYyWLOKS3swOL8mrjPkNzw44tso-bGFDiynLOlD6d49K9xjeCxZy6XNSWXXL6mubhGL7PgeXECqEtkDH4FtYAUIpLZ0LtqxUwMUmwYHrAQHcQjkKmh9BMApxrOApxt1II"/>
+<h5 class="text-primary-text font-bold mt-3">Emily Davis</h5>
+<p class="text-secondary-text text-sm">UX/UI Designer</p>
+</div>
+</div>
+</div>
+<!-- CTA Button -->
+<div class="p-4 pt-4 pb-8">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-primary text-primary-text text-base font-bold leading-normal tracking-[0.015em] transition-all duration-300 hover:bg-primary/90 hover:shadow-glow-md">
+<span class="truncate">Get Started</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

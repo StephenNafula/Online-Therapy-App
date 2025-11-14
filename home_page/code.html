@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ServiceApp - Expert Support, On Your Schedule</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .glassmorphism {
+        background: rgba(27, 37, 50, 0.6);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(54, 74, 99, 0.3);
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#4A90E2",
+              "background-light": "#F0F4F8",
+              "background-dark": "#0A192F",
+              "secondary-text": "#C7D3E3",
+              "highlight": "#64FFDA"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.75rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 p-4">
+<div class="flex items-center justify-between rounded-lg glassmorphism p-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-highlight text-3xl">
+                  security
+              </span>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1">ServiceApp</h2>
+</div>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-transparent text-white transition-colors hover:bg-white/10">
+<span class="material-symbols-outlined">
+                      menu
+                  </span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<div class="@container">
+<div class="@[480px]:p-4">
+<div class="flex min-h-[calc(100vh-120px)] flex-col gap-6 bg-cover bg-center bg-no-repeat @[480px]:gap-8 items-center justify-center p-4 text-center" data-alt="Abstract background with soft, glowing blue and cyan light patterns on a dark navy blue canvas." style="background-image: radial-gradient(circle at top right, rgba(100, 255, 218, 0.1), transparent 40%), radial-gradient(circle at bottom left, rgba(74, 144, 226, 0.15), transparent 50%);">
+<div class="flex flex-col gap-2">
+<h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em] @[480px]:text-5xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
+                            Expert Support, On Your Schedule
+                        </h1>
+<h2 class="text-secondary-text text-base font-normal leading-normal @[480px]:text-lg">
+                            Seamlessly connect with top-tier professionals for therapy or IT services, anytime you need.
+                        </h2>
+</div>
+<div class="flex-wrap gap-4 flex justify-center">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(74,144,226,0.6)]">
+<span class="truncate">Book a Session</span>
+</button>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-transparent text-white text-base font-bold leading-normal tracking-[0.015em] border-2 border-primary/50 transition-all hover:border-highlight hover:bg-highlight/10">
+<span class="truncate">Learn More</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Header: Services -->
+<div class="px-4 pb-3 pt-12">
+<h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">How We Can Help You</h2>
+</div>
+<!-- Text Grid: Services -->
+<div class="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 p-4">
+<div class="flex flex-1 gap-4 rounded-lg p-6 flex-col glassmorphism transition-all hover:transform hover:-translate-y-1 hover:shadow-2xl hover:border-highlight/50">
+<div class="text-highlight">
+<span class="material-symbols-outlined text-3xl">
+                        dns
+                    </span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="text-white text-lg font-bold leading-tight">IT Consultation</h2>
+<p class="text-secondary-text text-sm font-normal leading-normal">Expert advice to resolve your technical challenges and optimize your infrastructure.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-4 rounded-lg p-6 flex-col glassmorphism transition-all hover:transform hover:-translate-y-1 hover:shadow-2xl hover:border-highlight/50">
+<div class="text-highlight">
+<span class="material-symbols-outlined text-3xl">
+                        psychology
+                    </span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="text-white text-lg font-bold leading-tight">Personal Therapy</h2>
+<p class="text-secondary-text text-sm font-normal leading-normal">Confidential sessions with licensed therapists to support your mental well-being.</p>
+</div>
+</div>
+<div class="flex flex-1 gap-4 rounded-lg p-6 flex-col glassmorphism transition-all hover:transform hover:-translate-y-1 hover:shadow-2xl hover:border-highlight/50">
+<div class="text-highlight">
+<span class="material-symbols-outlined text-3xl">
+                        query_stats
+                    </span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="text-white text-lg font-bold leading-tight">System Diagnostics</h2>
+<p class="text-secondary-text text-sm font-normal leading-normal">Comprehensive analysis to identify and fix issues with your systems.</p>
+</div>
+</div>
+</div>
+<!-- Section Header: Testimonials -->
+<div class="px-4 pb-3 pt-12">
+<h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] text-center">What Our Clients Say</h2>
+</div>
+<!-- Testimonials Carousel -->
+<div class="flex flex-col items-center gap-6 p-4">
+<div class="relative w-full max-w-lg overflow-hidden">
+<div class="flex transition-transform duration-300 ease-in-out">
+<!-- Testimonial Card 1 -->
+<div class="w-full flex-shrink-0">
+<div class="flex flex-col gap-4 rounded-lg p-6 text-center glassmorphism">
+<p class="text-secondary-text text-base italic">"The IT support was phenomenal. They solved a critical server issue in under an hour, saving our project from a major delay."</p>
+<div>
+<h3 class="text-white font-bold">Alex Johnson</h3>
+<p class="text-sm text-highlight">Lead Developer</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center gap-2">
+<button class="h-2 w-2 rounded-full bg-primary"></button>
+<button class="h-2 w-2 rounded-full bg-primary/30"></button>
+<button class="h-2 w-2 rounded-full bg-primary/30"></button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#081424] mt-16 p-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="flex flex-col gap-4">
+<h3 class="font-bold text-white text-lg">ServiceApp</h3>
+<p class="text-secondary-text text-sm">Expert support, right when you need it. Your trusted partner in tech and wellness.</p>
+<div class="flex gap-4 mt-2">
+<a class="text-secondary-text hover:text-highlight transition-colors" href="#"><svg class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.67.88-.53 1.56-1.37 1.88-2.38-.83.49-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.22-1.95-.54v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.01-.06C2.64 18.45 4.27 19 6.12 19c7.34 0 11.35-6.08 11.35-11.35 0-.17 0-.34-.01-.51.78-.57 1.45-1.29 1.99-2.09z"></path></svg></a>
+<a class="text-secondary-text hover:text-highlight transition-colors" href="#"><svg class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24"><path d="M20.947 8.305a6.53 6.53 0 0 0-.419-2.216 4.61 4.61 0 0 0-2.633-2.633 6.606 6.606 0 0 0-2.186-.42c-.962-.043-1.267-.055-3.71-.055s-2.755 0-3.71.055a6.606 6.606 0 0 0-2.186.42 4.61 4.61 0 0 0-2.633 2.633 6.53 6.53 0 0 0-.419 2.216c-.043.962-.055 1.267-.055 3.71s0 2.755.055 3.71a6.53 6.53 0 0 0 .419 2.216 4.61 4.61 0 0 0 2.633 2.633 6.606 6.606 0 0 0 2.186.42c.962.043 1.267.055 3.71.055s2.755 0 3.71-.055a6.606 6.606 0 0 0 2.186-.42 4.61 4.61 0 0 0 2.633-2.633 6.53 6.53 0 0 0 .419-2.216c.043-.962.055-1.267.055-3.71s0-2.755-.055-3.71zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7zm4.805-6.405a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"></path></svg></a>
+<a class="text-secondary-text hover:text-highlight transition-colors" href="#"><svg class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24"><path d="M21.999 21.999h-4.27v-6.23c0-1.48-.03-3.39-2.06-3.39-2.07 0-2.38 1.61-2.38 3.28v6.34h-4.27V9.75h4.1v1.88h.06c.57-1.08 1.97-2.22 4.04-2.22 4.32 0 5.12 2.84 5.12 6.53v7.55zM2.5 7.87a2.38 2.38 0 1 1 0-4.76 2.38 2.38 0 0 1 0 4.76zM.37 22h4.27V9.75H.37V22z"></path></svg></a>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<h3 class="font-bold text-white text-lg">Quick Links</h3>
+<a class="text-secondary-text hover:text-highlight text-sm transition-colors" href="#">About Us</a>
+<a class="text-secondary-text hover:text-highlight text-sm transition-colors" href="#">Services</a>
+<a class="text-secondary-text hover:text-highlight text-sm transition-colors" href="#">FAQ</a>
+<a class="text-secondary-text hover:text-highlight text-sm transition-colors" href="#">Contact</a>
+</div>
+<div class="flex flex-col gap-3">
+<h3 class="font-bold text-white text-lg">Contact Us</h3>
+<p class="text-secondary-text text-sm">contact@serviceapp.com</p>
+<p class="text-secondary-text text-sm">+1 (234) 567-890</p>
+</div>
+</div>
+<div class="border-t border-primary/20 mt-8 pt-6 text-center text-sm text-secondary-text/70">
+<p>© 2024 ServiceApp. All Rights Reserved.</p>
+</div>
+</footer>
+</div>
+</body></html>

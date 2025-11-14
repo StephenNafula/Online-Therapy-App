@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0c2d55",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111821",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.05);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .dark .glass-effect {
+      background: rgba(41, 56, 78, 0.2);
+      border: 1px solid rgba(54, 74, 99, 0.5);
+    }
+    .glow-effect:hover {
+        box-shadow: 0 0 15px 0 rgba(12, 45, 85, 0.7);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200">
+<div class="relative flex min-h-screen">
+<!-- NavigationDrawer (Sidebar) -->
+<aside class="fixed z-20 h-full w-64 -translate-x-full transform bg-background-light dark:bg-background-dark p-4 transition-transform duration-300 md:relative md:translate-x-0 md:border-r md:border-white/10">
+<div class="mb-8 flex items-center gap-3 px-2">
+<span class="material-symbols-outlined text-primary text-3xl">
+            neurology
+        </span>
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">Happiness</h1>
+</div>
+<ul class="flex flex-col gap-2">
+<li>
+<a class="flex h-12 items-center gap-4 rounded-lg bg-primary/20 px-4 text-primary dark:bg-primary dark:text-white" href="#">
+<span class="material-symbols-outlined">
+              dashboard
+            </span>
+<p class="text-base font-semibold">Dashboard</p>
+</a>
+</li>
+<li>
+<a class="flex h-12 items-center gap-4 rounded-lg px-4 hover:bg-gray-200 dark:hover:bg-white/10" href="#">
+<span class="material-symbols-outlined">
+              calendar_month
+            </span>
+<p class="text-base font-semibold">Sessions</p>
+</a>
+</li>
+<li>
+<a class="flex h-12 items-center gap-4 rounded-lg px-4 hover:bg-gray-200 dark:hover:bg-white/10" href="#">
+<span class="material-symbols-outlined">
+              chat_bubble
+            </span>
+<p class="text-base font-semibold">Messages</p>
+</a>
+</li>
+<li>
+<a class="flex h-12 items-center gap-4 rounded-lg px-4 hover:bg-gray-200 dark:hover:bg-white/10" href="#">
+<span class="material-symbols-outlined">
+              person
+            </span>
+<p class="text-base font-semibold">Profile</p>
+</a>
+</li>
+</ul>
+<div class="absolute bottom-4 left-4 right-4">
+<a class="flex h-12 w-full items-center gap-4 rounded-lg px-4 hover:bg-gray-200 dark:hover:bg-white/10" href="#">
+<span class="material-symbols-outlined">
+            logout
+          </span>
+<p class="text-base font-semibold">Logout</p>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1">
+<!-- TopAppBar -->
+<header class="flex h-20 items-center justify-between border-b border-white/10 bg-background-light/80 p-4 backdrop-blur-sm dark:bg-background-dark/80 md:px-8">
+<div class="flex items-center gap-4">
+<button class="text-gray-900 dark:text-white md:hidden">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white sm:text-2xl">Welcome back, Alex!</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-gray-900 hover:bg-gray-200 dark:text-white dark:hover:bg-white/10">
+<span class="material-symbols-outlined">
+              notifications
+            </span>
+<span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background-dark"></span>
+</button>
+<div class="h-10 w-10 overflow-hidden rounded-full">
+<div class="bg-center bg-no-repeat aspect-square bg-cover bg-[#253446] text-[#95abc6] flex items-center justify-center" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwYvwtBKNF-nVe8N7PtDIEF7AP1labWJ7UW-NAsMedpkBifzh4TNnkJkKFV1G2Mukm_wyqVtgUxl6D7q-e4uzwpvSW_ddzIMehuvOBqHdesw-dS3TrOD_vs7huAubbJk5THSz1OlDp43q1KYxTqz9Sq2CO8b_w_27LQZ6smf3cpVhNRU_ml3ZLnsCYqTuL4g-DZroVunWcIL3W2GH_WiLUEglVFqDbq5VbizGeGqBAu_SVVYqQ1aDx2rpIPpCK-quUjj64sZ-hdck9");'></div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-4 md:p-8">
+<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+<!-- Left Column -->
+<div class="lg:col-span-2">
+<!-- Upcoming Sessions -->
+<section>
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] text-gray-900 dark:text-white pb-4">Upcoming Sessions</h2>
+<div class="flex flex-col gap-4">
+<!-- Session Item 1 -->
+<div class="glass-effect flex flex-col items-center justify-between gap-4 rounded-xl p-4 sm:flex-row">
+<div class="flex w-full items-center gap-4 sm:w-auto">
+<div class="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 border-primary/50">
+<div class="bg-center bg-no-repeat aspect-square bg-cover" data-alt="Therapist avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDhK1a8QjJwwr_Lv6qJvDYV31rsNQgmfdscDw4qSjg1Cm67Bi5x7h7yKeBIvls_D1LYLrrlOkA1lSlpTBMYUTMInOHx7bDd_KGv4kC4ygqMQCNJTpIBbpJIxs26LVz4jS5WEo2VkemH2zg49EB7Ql_MlYaxqrlvzIRKUx1N7BAq6VvoU92PP-NMs760CV_ucIZwGTXQdfxv48nKALhb9mr4IrkF-nDWNfOsq_mOkuqRa8o_LgjPPZUHZNavEi2YjKE47BEo-6QsnhwV");'></div>
+</div>
+<div>
+<p class="font-bold text-gray-900 dark:text-white">Dr. Evelyn Reed</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">Cognitive Behavioral Therapy</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">Today, 4:00 PM</p>
+</div>
+</div>
+<button class="glow-effect w-full rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white transition hover:opacity-90 sm:w-auto">Join Call</button>
+</div>
+<!-- Session Item 2 -->
+<div class="glass-effect flex flex-col items-center justify-between gap-4 rounded-xl p-4 sm:flex-row">
+<div class="flex w-full items-center gap-4 sm:w-auto">
+<div class="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full border-2 border-primary/50">
+<div class="bg-center bg-no-repeat aspect-square bg-cover" data-alt="Therapist avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6ievunCyljUUDN7rpmE1CKYvKSsjArX4Y1rnhh6Vo_OE7hRn4Dk62m7YhaktYAP9rhqmKM5ijBBkqZR-NxyxrZp7N0TtAnlzZ87UBAlrnUxUDeZBLe5Ao0o_5_XySmlUl-TnbpMtb411UL7f9loMWValeJIWwr_iNxI-GMHAydlhUICxreGuBisJ-kbwmerftRI2jY660byrnduzvStzZROtn7j5VSDv3Thu0kExY2XFbgMSwuyuH0lD78m1B48wexw6FuDeBcreb");'></div>
+</div>
+<div>
+<p class="font-bold text-gray-900 dark:text-white">Mark Chen</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">IT Support Session</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">Tomorrow, 11:30 AM</p>
+</div>
+</div>
+<button class="w-full rounded-lg border border-primary/50 px-6 py-3 text-sm font-bold text-primary transition hover:bg-primary/10 sm:w-auto dark:text-white dark:hover:bg-primary/20">Join Call</button>
+</div>
+</div>
+</section>
+<!-- Your Activity -->
+<section class="mt-8">
+<h2 class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-4">Your Activity</h2>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+<div class="flex flex-col gap-2 rounded-xl p-6 glass-effect">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Total Sessions</p>
+<p class="text-gray-900 dark:text-white tracking-light text-3xl font-bold leading-tight">28</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 glass-effect">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Pending Requests</p>
+<p class="text-gray-900 dark:text-white tracking-light text-3xl font-bold leading-tight">3</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 glass-effect">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Hours Logged</p>
+<p class="text-gray-900 dark:text-white tracking-light text-3xl font-bold leading-tight">42</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column -->
+<div class="lg:col-span-1">
+<!-- Quick Actions -->
+<section>
+<h2 class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-4">Quick Actions</h2>
+<div class="flex flex-col gap-4">
+<button class="glow-effect flex h-20 w-full items-center justify-start gap-4 rounded-xl bg-primary p-6 text-left text-white transition hover:opacity-90">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+<span class="text-lg font-semibold">Book a New Session</span>
+</button>
+<button class="flex h-20 w-full items-center justify-start gap-4 rounded-xl p-6 text-left glass-effect text-gray-900 dark:text-white transition hover:bg-gray-200/50 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-3xl">mark_chat_unread</span>
+<span class="text-lg font-semibold">Check Messages</span>
+</button>
+<button class="flex h-20 w-full items-center justify-start gap-4 rounded-xl p-6 text-left glass-effect text-gray-900 dark:text-white transition hover:bg-gray-200/50 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-3xl">history</span>
+<span class="text-lg font-semibold">View History</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

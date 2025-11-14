@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* project base tweaks */
+@layer base {
+  body { 
+    font-family: Inter, system-ui, Arial; 
+    margin: 0; 
+    padding: 0;
+    min-height: 100vh;
+    background-color: theme('colors.background-dark');
+  }
+}
+
+@layer components {
+  .glassmorphic {
+    @apply backdrop-blur-lg bg-white/5 border border-white/10;
+  }
+
+  .glass-card {
+    @apply glassmorphic p-6 rounded-xl transition-all duration-300;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

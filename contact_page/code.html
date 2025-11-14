@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Us</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .form-input:focus {
+        border-color: #64FFDA;
+        box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.3);
+      }
+      .glassmorphism {
+        background: rgba(42, 60, 85, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0c2d55",
+              "background-light": "#f6f7f8",
+              "background-dark": "#0A192F",
+              "vivid-blue": "#4A90E2",
+              "cyan-glow": "#64FFDA",
+              "text-primary": "#FFFFFF",
+              "text-secondary": "#C7D3E3",
+              "input-bg": "rgba(42, 60, 85, 0.2)",
+              "input-border": "rgba(69, 90, 125, 0.5)",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+              'glow': '0 0 15px rgba(100, 255, 218, 0.1)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="flex items-center p-4">
+<button class="text-text-secondary flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-text-primary text-lg font-bold leading-tight flex-1 text-center -ml-12">Contact Us</h1>
+</header>
+<main class="flex-grow px-4 pb-12">
+<!-- Headline Text -->
+<h2 class="text-text-primary tracking-light text-[32px] font-bold leading-tight text-left pb-4 pt-6">
+                Get in Touch
+            </h2>
+<p class="text-text-secondary text-base pb-8">We're here to help. Send us a message and we'll get back to you shortly.</p>
+<!-- Contact Form -->
+<form class="flex flex-col gap-6">
+<!-- Full Name Field -->
+<label class="flex flex-col w-full">
+<p class="text-text-primary text-base font-medium leading-normal pb-2">Full Name</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary focus:outline-none focus:ring-0 border border-input-border bg-input-bg h-14 placeholder:text-text-secondary p-[15px] text-base font-normal leading-normal transition-all duration-300" placeholder="Enter your full name" type="text"/>
+</label>
+<!-- Email Address Field -->
+<label class="flex flex-col w-full">
+<p class="text-text-primary text-base font-medium leading-normal pb-2">Email Address</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary focus:outline-none focus:ring-0 border border-input-border bg-input-bg h-14 placeholder:text-text-secondary p-[15px] text-base font-normal leading-normal transition-all duration-300" placeholder="Enter your email address" type="email"/>
+</label>
+<!-- Message Textarea -->
+<label class="flex flex-col w-full">
+<p class="text-text-primary text-base font-medium leading-normal pb-2">Your Message</p>
+<textarea class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary focus:outline-none focus:ring-0 border border-input-border bg-input-bg min-h-36 placeholder:text-text-secondary p-[15px] text-base font-normal leading-normal transition-all duration-300" placeholder="Type your message here..."></textarea>
+</label>
+<!-- Submit Button -->
+<button class="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-vivid-blue to-cyan-glow p-4 text-center font-bold text-background-dark transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]" type="submit">
+                    Send Message
+                </button>
+</form>
+<!-- Contact Information Section -->
+<div class="mt-12">
+<div class="glassmorphism rounded-xl p-6 shadow-glow">
+<ul class="space-y-5">
+<li class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-vivid-blue/20 text-cyan-glow">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<span class="text-text-secondary">contact@service.com</span>
+</li>
+<li class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-vivid-blue/20 text-cyan-glow">
+<span class="material-symbols-outlined">call</span>
+</div>
+<span class="text-text-secondary">+1 (555) 123-4567</span>
+</li>
+<li class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-vivid-blue/20 text-cyan-glow">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<span class="text-text-secondary">123 Tech Lane, Silicon Valley</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Map Placeholder -->
+<div class="mt-8">
+<div class="glassmorphism rounded-xl shadow-glow overflow-hidden">
+<img alt="Abstract map of a city with glowing blue and teal lines representing streets and data pathways on a dark background." class="h-48 w-full object-cover opacity-30" data-location="Silicon Valley" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg4ExoNb4D8RspRgvTRJmGqIAnsuO47HgOOKAs0LEZ11ATFbLRJBLuKyrHB-bt8F93I65hVou_OyWduAt0MCJR7ES2BML-uD5revB3oPplMyX43xgEh5WWNSvapqlsnQPpqUhxYBcj8x9Q-fBmN3q5WwdUwht1dLrpycakDDkWBCeME4fs7uHKzI28hz5jFg_JQrw5QCA85dp39icOXQTWfyA8ysuo8DFJC00fJGiITRSNKqKwiTA2t7gNtnRLkzoswxl1VF9PtvGU"/>
+</div>
+</div>
+</main>
+</div>
+<!-- Success Modal -->
+<!-- This would typically be hidden and shown with JavaScript -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+<div class="glassmorphism flex w-full max-w-sm flex-col items-center gap-4 rounded-xl p-8 text-center shadow-lg shadow-cyan-glow/10">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-glow">
+<span class="material-symbols-outlined text-4xl text-background-dark">check</span>
+</div>
+<h3 class="text-2xl font-bold text-text-primary">Message Sent!</h3>
+<p class="text-text-secondary">Thank you for reaching out. We'll get back to you shortly.</p>
+<button class="mt-4 w-full rounded-lg bg-vivid-blue px-6 py-3 font-semibold text-text-primary transition-colors hover:bg-vivid-blue/80">OK</button>
+</div>
+</div>
+</body></html>

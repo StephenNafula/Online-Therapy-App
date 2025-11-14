@@ -1,0 +1,16 @@
+{
+  "name": "stitch-therapy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install --legacy-peer-deps",
+    "build:client": "cd client && npm run build",
+    "test:server": "cd server && npm test",
+    "ci": "npm run install:all && npm run build:client && npm run test:server",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "start": "cd server && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
