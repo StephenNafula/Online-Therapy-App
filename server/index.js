@@ -30,6 +30,11 @@ const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use('/api/', apiLimiter);
 app.use(express.json());
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'Server is running', version: '1.0.0' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
