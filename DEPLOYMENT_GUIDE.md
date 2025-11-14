@@ -158,9 +158,10 @@ vercel --prod
 
 **During deployment, you'll be asked:**
 - Project name: `happiness-therapy-app-frontend` (or similar)
-- Framework preset: Select `Vite` 
-- Build command: `npm run build`
-- Output directory: `dist`
+      - Framework preset: Select `Vite` 
+      - Build command: `npm run build`
+      - Output directory: `dist` (if you're deploying from inside the `client` folder)
+         OR set: `client/dist` when your project is a monorepo and Vercel runs the build from the repository root.
 - Install dependencies: `Yes`
 
 ### Step 2.5: Configure Environment Variables in Vercel
