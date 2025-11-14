@@ -195,60 +195,56 @@ Visit it and check:
    - **Start Command**: `cd server && npm start`
    - **Root Directory**: `/` (leave blank)
 
-### Step 3.3: Add Environment Variables
+### Step 3.3: Add Environment Variables to Render
 
-In Render dashboard, go to **Environment** section and add:
+⚠️ **CRITICAL**: You MUST set the MongoDB Atlas connection string, NOT localhost!
+
+In Render dashboard, go to your Web Service → **Environment** section and add these variables:
 
 ```
-MONGODB_URI=mongodb://localhost:27017/happiness-therapy-app
+MONGODB_URI=mongodb+srv://appuser:YourPassword@cluster0.abcd123.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority
 JWT_SECRET=your-super-secret-key-change-this-in-production
 PORT=4000
 NODE_ENV=production
-CORS_ORIGIN=https://happiness-therapy-app-frontend.vercel.app
+CORS_ORIGIN=https://your-vercel-frontend-url.vercel.app
 ```
 
-⚠️ **IMPORTANT**: For production MongoDB, use MongoDB Atlas (cloud) instead of localhost:
+**How to get your MongoDB Atlas connection string:**
+1. Go to https://www.mongodb.com/cloud/atlas
+2. Sign in to your account
+3. Click **Clusters** → **Connect** → **Connect your application**
+4. Copy the connection string for Node.js
+5. Replace `<password>` with your database password
+6. Set the database name to `happiness-therapy-app`
 
-### Step 3.4: Set Up MongoDB Atlas (Recommended for Production)
-
-Since Render can't access your local MongoDB:
-
-1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free account
-3. Create a cluster (M0 free tier)
-4. Get your connection string:
-   - Go to **Connect** → **Drivers**
-   - Copy the connection string
-   - Replace `<password>` with your database password
-   - Should look like: `mongodb+srv://user:password@cluster.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority`
-
-5. Update `server/.env`:
-```env
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority
-JWT_SECRET=your-secret-key
-PORT=4000
-NODE_ENV=production
-CORS_ORIGIN=https://happiness-therapy-app-frontend.vercel.app
+**Example (DO NOT use localhost):**
+```
+MONGODB_URI=mongodb+srv://appuser:MySecurePassword123@cluster0.abc123.mongodb.net/happiness-therapy-app?retryWrites=true&w=majority
 ```
 
-6. In Render, update the `MONGODB_URI` environment variable with your Atlas connection string
+### Step 3.4: Redeploy After Setting Environment Variables
 
-### Step 3.5: Deploy to Render
+1. After adding all environment variables to Render, click **Save**
+2. Render will automatically redeploy your service
+3. Check the logs to confirm connection: look for **"Connected to MongoDB"**
+4. If you see `MongooseServerSelectionError` or `ECONNREFUSED localhost:27017`, your `MONGODB_URI` is wrong — go back and verify the Atlas connection string is set correctly
+5. Once logs show "Connected to MongoDB" and "listening on port 4000", you're good!
 
-1. In Render dashboard, click **"Deploy"**
-2. Render will:
-   - Clone your repo
-   - Run `npm install` in server folder
-   - Start the server with `npm start`
-3. You'll get a URL like: `https://happiness-therapy-api.onrender.com`
+### Step 3.5: Seed Initial Data (After Successful Deploy)
 
-### Step 3.6: Wait for Deployment
+Once your backend is live and connected to MongoDB Atlas, seed the initial admin and therapist users:
 
-- Initial deployment takes 2-3 minutes
-- Check the logs for any errors
-- Look for: "listening on port 4000"
+```bash
+cd server
 
-### Step 3.7: Test Backend
+# Seed admin user
+node scripts/create_admin.js
+
+# Seed therapist user
+node scripts/create_therapist.js
+```
+
+### Step 3.6: Test Backend
 
 ```bash
 # Test the API
@@ -259,11 +255,36 @@ curl https://your-render-url.onrender.com/api/bookings
 
 ---
 
+### Troubleshooting Render Deployment
+
+**If you see: `MongooseServerSelectionError: connect ECONNREFUSED localhost:27017`**
+- ❌ This means Render can't connect to MongoDB
+- ✅ Fix: Set `MONGODB_URI` in Render Environment to your MongoDB Atlas connection string (not localhost!)
+- ✅ Verify: Go to Render → Your Service → Environment → Check that `MONGODB_URI` starts with `mongodb+srv://`
+
+**If deployment keeps failing:**
+1. Check the Render logs (Dashboard → Your Service → Logs)
+2. Verify all environment variables are set
+3. Verify the build command: `cd server && npm install && npm run build`
+4. Verify the start command: `cd server && npm start`
+
+### Step 3.7: Deploy to Render
+
+1. In Render dashboard, click **"New +"** → **"Web Service"**
+2. Select your GitHub repository: `Online-Therapy-App`
+3. Configure as in Step 3.2
+4. Add environment variables (Step 3.3) — especially `MONGODB_URI`!
+5. Click **Create Web Service**
+6. Render will deploy automatically
+7. Monitor logs for success messages
+
+---
+
 ## Part 4: Connect Everything
 
 ### Step 4.1: Update Frontend with Backend URL
 
-1. Get your Render backend URL: `https://happiness-therapy-api.onrender.com`
+1. Get your Render backend URL from the dashboard (e.g., `https://happiness-therapy-api.onrender.com`)
 2. Go to Vercel dashboard → Your project → Settings → Environment Variables
 3. Update:
    ```
