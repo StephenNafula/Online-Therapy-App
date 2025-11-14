@@ -23,8 +23,21 @@ const io = new Server(server, {
 
 // Basic middleware
 app.use(helmet());
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-app.use(cors({ origin: CLIENT_ORIGIN }));
+// Allow multiple origins via CORS_ORIGIN (comma-separated) or CLIENT_ORIGIN for backward compatibility
+const rawOrigins = process.env.CORS_ORIGIN || process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const ALLOWED_ORIGINS = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow non-browser (curl, server-to-server) requests with no origin
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy: origin not allowed'));
+  },
+  credentials: true
+}));
 
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use('/api/', apiLimiter);
