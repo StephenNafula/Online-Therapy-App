@@ -74,7 +74,7 @@ if (require.main === module) {
   
   async function start() {
     try {
-      const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/stitch_therapy';
+      const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/stitch_therapy';
       await mongoose.connect(mongoUri);
       if (process.env.NODE_ENV !== 'test') {
         console.log('Connected to MongoDB');
