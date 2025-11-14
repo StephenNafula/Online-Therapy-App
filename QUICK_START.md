@@ -62,7 +62,7 @@ mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/happiness-therapy-app
 6. Configure:
    - Name: happiness-therapy-api
    - Environment: Node
-   - Build Command: cd server && npm install
+   - Build Command: cd server && npm install && npm run build
    - Start Command: cd server && npm start
    - Root Directory: / (leave blank)
 7. Add Environment Variables:

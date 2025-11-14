@@ -206,9 +206,9 @@ Visit it and check:
 3. Configure:
    - **Name**: `happiness-therapy-api`
    - **Environment**: `Node`
-   - **Build Command**: `cd server && npm install`
+   - **Build Command**: `cd server && npm install && npm run build`
    - **Start Command**: `cd server && npm start`
-   - **Root Directory**: `/` (leave blank if root)
+   - **Root Directory**: `/` (leave blank)
 
 ### Step 3.3: Add Environment Variables
 

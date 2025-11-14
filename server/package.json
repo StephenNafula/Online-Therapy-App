@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "build": "echo 'No build step needed for Node.js server'",
     "test": "jest",
     "test:watch": "jest --watch"
   },
