@@ -367,12 +367,30 @@ export default function Dashboard() {
                         <div className="rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 p-8 text-center">
                           <span className="material-symbols-outlined text-4xl text-gray-400 mb-2">calendar_month</span>
                           <p className="text-gray-400">No upcoming sessions</p>
-                          <a
-                            href="/services"
-                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold mt-4 transition-all hover:bg-primary/90"
-                          >
-                            Book Your First Session
-                          </a>
+                          {user?.role === 'therapist' ? (
+                            <button
+                              onClick={() => { setActiveTab('availability'); setIsSidebarOpen(false) }}
+                              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold mt-4 transition-all hover:bg-primary/90"
+                            >
+                              <span className="material-symbols-outlined">schedule</span>
+                              Set Your Availability
+                            </button>
+                          ) : user?.role === 'admin' ? (
+                            <a
+                              href="/app/admin"
+                              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold mt-4 transition-all hover:bg-primary/90"
+                            >
+                              <span className="material-symbols-outlined">dashboard</span>
+                              Go to Admin Panel
+                            </a>
+                          ) : (
+                            <a
+                              href="/services"
+                              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold mt-4 transition-all hover:bg-primary/90"
+                            >
+                              Book Your First Session
+                            </a>
+                          )}
                         </div>
                       )}
 
