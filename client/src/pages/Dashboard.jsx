@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [noteBookingId, setNoteBookingId] = useState(null)
   const [noteText, setNoteText] = useState('')
   const [activeTab, setActiveTab] = useState('bookings')
+  const [messagePrefill, setMessagePrefill] = useState('')
   const lastPollRef = useRef(new Date())
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || 'null')
@@ -556,6 +557,19 @@ export default function Dashboard() {
                                   >
                                     <span className="material-symbols-outlined">notes</span>
                                     Add Note
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      // open messages tab and prefill recipient with client email
+                                      setMessagePrefill(b.client?.email || '')
+                                      setActiveTab('messages')
+                                      setIsSidebarOpen(false)
+                                    }}
+                                    className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-white font-bold transition-all hover:bg-white/5 text-sm"
+                                  >
+                                    <span className="material-symbols-outlined">chat</span>
+                                    Message Client
                                   </button>
 
                                   <button

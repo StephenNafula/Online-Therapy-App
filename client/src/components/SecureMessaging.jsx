@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function SecureMessaging({ token, userRole }) {
+export default function SecureMessaging({ token, userRole, prefillRecipient }) {
   const [messages, setMessages] = useState([]);
   const [showCompose, setShowCompose] = useState(false);
   const [recipientId, setRecipientId] = useState('');
@@ -24,6 +24,11 @@ export default function SecureMessaging({ token, userRole }) {
 
   useEffect(() => {
     loadMessages();
+    // if a prefill recipient is provided, open compose with it
+    if (prefillRecipient) {
+      setRecipientId(prefillRecipient);
+      setShowCompose(true);
+    }
     const interval = setInterval(loadMessages, 30000); // refresh every 30s
     return () => clearInterval(interval);
   }, []);
