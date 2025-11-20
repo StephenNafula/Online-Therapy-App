@@ -13,8 +13,8 @@ export default function Login(){
       setLoading(true)
       try {
         const res = await post('/auth/login', { email, password })
-        if (res.token) {
-          localStorage.setItem('token', res.token)
+        if (res.accessToken) {
+          localStorage.setItem('token', res.accessToken)
           localStorage.setItem('user', JSON.stringify(res.user))
           navigate('/app/dashboard', { replace: true })
         } else {
