@@ -11,6 +11,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Services from './pages/Services'
 import Dashboard from './pages/Dashboard'
+import AdminDashboard from './pages/AdminDashboard'
 import PublicLayout from './components/PublicLayout'
 import './styles.css'
 
@@ -37,6 +38,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="app/*" element={<App />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="admin" element={<AdminDashboard />} />
           <Route path="meeting/:roomId" element={<Meeting />} />
         </Route>
       </Routes>

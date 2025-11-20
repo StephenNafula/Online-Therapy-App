@@ -16,7 +16,7 @@ export default function Home(){
                     Connect with caring professionals in safe, private audio sessions. Real conversations, real support — whenever you need it most.
                   </h2>
                   <div className="flex flex-wrap gap-4 justify-center pt-4">
-                    <a className="flex min-w-[160px] items-center justify-center gap-2 overflow-hidden rounded-lg h-14 px-8 bg-primary text-white text-lg font-bold tracking-[0.015em] transition-all hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(74,144,226,0.3)]" href="/therapists">
+                    <a className="flex min-w-[160px] items-center justify-center gap-2 overflow-hidden rounded-lg h-14 px-8 bg-primary text-white text-lg font-bold tracking-[0.015em] transition-all hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(74,144,226,0.3)]" href="/services">
                       <span className="material-symbols-outlined">psychology</span>
                       Book Now (No Login)
                     </a>

@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef } from 'react'
 import { io as ioClient } from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
 import { get, patch } from '../api'
+import AvailabilityManagement from '../components/AvailabilityManagement'
+import AudioCallComponent from '../components/AudioCallComponent'
+import SessionNotesEditor from '../components/SessionNotesEditor'
+import SecureMessaging from '../components/SecureMessaging'
 
 export default function Dashboard() {
   const [bookings, setBookings] = useState([])
@@ -25,9 +29,11 @@ export default function Dashboard() {
   const [slotTime, setSlotTime] = useState('')
   const [slotDuration, setSlotDuration] = useState(60)
   const [editingSlotId, setEditingSlotId] = useState(null)
+  const [activeTab, setActiveTab] = useState('bookings') // new: tab management
   const lastPollRef = useRef(new Date())
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const token = localStorage.getItem('token')
 
   // Initial load
   useEffect(() => {
@@ -616,7 +622,7 @@ export default function Dashboard() {
                         </button>
                       ) : (
                         <a
-                          href="/app/therapists"
+                          href="/services"
                           className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold mt-4 transition-all hover:bg-primary/90"
                         >
                           Book Your First Session

@@ -13,7 +13,12 @@ const BookingSchema = new mongoose.Schema({
     currency: String
   },
   roomId: String,
-  notes: String
+  notes: String,
+  // Audio call related
+  secureCallLink: String, // unique secure link for client to join call
+  callStartedAt: Date,
+  callEndedAt: Date,
+  callDuration: Number // in seconds
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', BookingSchema);

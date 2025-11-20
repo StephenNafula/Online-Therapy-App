@@ -40,22 +40,32 @@ router.post('/',
 );
 
 // Guest booking (no auth) - create or link a client user and create booking
-router.post('/guest-booking',
+const rateLimit = require('express-rate-limit');
+
+// stricter limiter for guest bookings to prevent abuse (5 per hour per IP)
+const guestBookingLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: 'Too many booking attempts from this IP, please try again later.' });
+
+router.post('/guest-booking', guestBookingLimiter,
   [
-    body('client.fullName').notEmpty().withMessage('Full name is required'),
-    body('client.email').isEmail().withMessage('Valid email is required'),
-    body('client.phone').notEmpty().withMessage('Phone number is required'),
-    body('session.preferredDate').notEmpty().withMessage('Preferred date is required'),
-    body('session.preferredTime').notEmpty().withMessage('Preferred time is required'),
-    body('session.therapyType').notEmpty().withMessage('Therapy type is required'),
+    body('client.fullName').trim().escape().notEmpty().withMessage('Full name is required'),
+    body('client.email').normalizeEmail().isEmail().withMessage('Valid email is required'),
+    body('client.phone').trim().isMobilePhone('any').withMessage('Valid phone number is required'),
+    body('session.preferredDate').trim().notEmpty().withMessage('Preferred date is required'),
+    body('session.preferredTime').trim().notEmpty().withMessage('Preferred time is required'),
+    body('session.therapyType').trim().escape().notEmpty().withMessage('Therapy type is required'),
     body('payment.amountPaid').isFloat({ gt: 0 }).withMessage('Amount must be a positive number'),
-    body('payment.method').notEmpty().withMessage('Payment method is required')
+    body('payment.method').trim().escape().notEmpty().withMessage('Payment method is required'),
+    body('consent').isBoolean().withMessage('Consent must be provided and true')
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     try {
       const { client: clientInfo, session, payment } = req.body;
+
+      // Find or create client user by email (server-side validation ensures sanitized values)
+      // Ensure consent was provided
+      if (!req.body.consent) return res.status(400).json({ message: 'Informed consent is required to create a booking' });
 
       // Find or create client user by email
       let clientUser = await User.findOne({ email: clientInfo.email });

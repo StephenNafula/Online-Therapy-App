@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { post } from '../api'
+import ConsentModal from '../components/ConsentModal'
 
 export default function Booking(){
   const { therapistId } = useParams()
@@ -31,6 +32,10 @@ export default function Booking(){
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [agreeToTherapy, setAgreeToTherapy] = useState(false)
   const [subscribeUpdates, setSubscribeUpdates] = useState(false)
+
+  // modal state for privacy & informed consent
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  const [showConsentModal, setShowConsentModal] = useState(false)
 
   // Form State
   const [loading, setLoading] = useState(false)
@@ -117,11 +122,9 @@ export default function Booking(){
           method: paymentMethod,
           amountPaid: parseFloat(amountPaid)
         },
-        consent: {
-          agreeToTerms,
-          agreeToTherapy,
-          subscribeUpdates
-        },
+        // server expects a boolean consent flag; ensure both required consents are true
+        consent: Boolean(agreeToTerms && agreeToTherapy),
+        subscribeUpdates: Boolean(subscribeUpdates),
         status: 'pending',
         createdAt: new Date().toISOString()
       }
@@ -287,7 +290,7 @@ export default function Booking(){
                 Back to Home
               </button>
               <button
-                onClick={() => navigate('/therapists')}
+                onClick={() => navigate('/services')}
                 className="flex-1 py-3 rounded-lg bg-primary text-black font-bold hover:bg-blue-500 transition-all"
               >
                 Browse More Sessions
@@ -522,7 +525,7 @@ export default function Booking(){
                   className="w-5 h-5 rounded mt-1 accent-primary"
                 />
                 <span className="text-sm">
-                  I agree to the <a href="#" className="text-primary hover:underline">Terms and Conditions</a> *
+                  I agree to the <button type="button" onClick={() => setShowPrivacyModal(true)} className="text-primary hover:underline">Terms and Conditions</button> *
                 </span>
               </label>
               {errors.agreeToTerms && <span className="text-red-400 text-xs">{errors.agreeToTerms}</span>}
@@ -535,7 +538,7 @@ export default function Booking(){
                   className="w-5 h-5 rounded mt-1 accent-primary"
                 />
                 <span className="text-sm">
-                  I consent to therapy and understand this is not emergency medical care. In case of crisis, please call emergency services. *
+                  I consent to therapy and understand this is not emergency medical care. In case of crisis, please call emergency services. <button type="button" onClick={() => setShowConsentModal(true)} className="text-primary hover:underline">Read more</button> *
                 </span>
               </label>
               {errors.agreeToTherapy && <span className="text-red-400 text-xs">{errors.agreeToTherapy}</span>}
@@ -558,7 +561,7 @@ export default function Booking(){
           <div className="flex gap-4">
             <button
               type="button"
-              onClick={() => navigate('/therapists')}
+              onClick={() => navigate('/services')}
               className="flex-1 py-4 rounded-lg border border-white/20 text-white font-bold hover:bg-white/10 transition-all"
             >
               Cancel
@@ -586,6 +589,24 @@ export default function Booking(){
             * Required fields
           </p>
         </form>
+
+        {/* Consent & Privacy Modals */}
+        <ConsentModal
+          open={showPrivacyModal}
+          title="Privacy Policy"
+          content={`<h4>Privacy & Data Use</h4><p>We collect your name, email and phone to process bookings and contact you about your session. We do not share your personal data with third parties except for payment processing and therapist matching. Data is stored securely in our database for service delivery and regulatory needs.</p><p>If you wish to delete your data, contact admin@happinesstherapy.com and we will respond within 30 days.</p>`}
+          onClose={() => setShowPrivacyModal(false)}
+          onAccept={() => setAgreeToTerms(true)}
+        />
+
+        <ConsentModal
+          open={showConsentModal}
+          title="Informed Consent for Therapy"
+          content={`<h4>Informed Consent</h4><p>By consenting you acknowledge that therapy sessions are not emergency services. If you are in crisis, call your local emergency number immediately.</p><p>You agree to attend scheduled sessions or provide notice for rescheduling. You consent to the therapist providing clinical care and documentation of the session.</p>`}
+          onClose={() => setShowConsentModal(false)}
+          onAccept={() => setAgreeToTherapy(true)}
+        />
+
       </div>
     </div>
   )

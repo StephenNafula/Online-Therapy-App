@@ -6,11 +6,16 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
 const signalingRoutes = require('./routes/signaling');
 const usersRoutes = require('./routes/users');
+const availabilityRoutes = require('./routes/availability');
+const sessionNotesRoutes = require('./routes/sessionNotes');
+const messagesRoutes = require('./routes/messages');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +44,9 @@ app.use(cors({
   credentials: true
 }));
 
+// parse cookies (used for refresh token cookie)
+app.use(cookieParser());
+
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100 });
 app.use('/api/', apiLimiter);
 app.use(express.json());
@@ -53,6 +61,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/signaling', signalingRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/availability', availabilityRoutes);
+app.use('/api/session-notes', sessionNotesRoutes);
+app.use('/api/messages', messagesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Socket.IO for WebRTC signaling
 io.on('connection', (socket) => {
