@@ -201,7 +201,7 @@ export default function Dashboard() {
           <h1 className="text-xl font-bold text-white">Happiness</h1>
         </div>
 
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2 pb-24">
           <li>
             <button
               onClick={() => { setActiveTab('bookings'); setIsSidebarOpen(false) }}
@@ -260,8 +260,8 @@ export default function Dashboard() {
           )}
         </ul>
 
-        <div className="absolute bottom-4 left-4 right-4">
-          <button onClick={handleLogout} className="w-full flex h-12 items-center gap-4 rounded-lg px-4 hover:bg-white/10 transition-colors text-white">
+        <div className="absolute bottom-4 left-4 right-4 flex gap-2">
+          <button onClick={handleLogout} className="w-full flex h-12 items-center gap-4 rounded-lg px-4 hover:bg-red-600/20 hover:text-red-400 transition-colors text-white border border-red-500/20">
             <span className="material-symbols-outlined">logout</span>
             <p className="text-base font-semibold">Logout</p>
           </button>
