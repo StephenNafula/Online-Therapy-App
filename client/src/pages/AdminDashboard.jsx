@@ -16,7 +16,16 @@ export default function AdminDashboard() {
   const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
   useEffect(() => {
-    if (!token || user?.role !== 'admin') {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    // If a therapist accesses this route, redirect them to their therapist dashboard
+    if (user?.role && user.role !== 'admin') {
+      if (user.role === 'therapist') {
+        navigate('/app/dashboard');
+        return;
+      }
       navigate('/login');
       return;
     }
@@ -92,7 +101,26 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background-dark font-display text-white p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto flex gap-6">
+        {/* Sidebar for admin navigation */}
+        <aside className="w-64 shrink-0 bg-black/20 border border-white/5 rounded-xl p-4">
+          <h3 className="text-lg font-bold mb-4">Admin</h3>
+          <nav className="flex flex-col gap-2">
+            {['overview', 'therapists', 'bookings', 'audit'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${activeTab === tab ? 'bg-primary text-black' : 'hover:bg-white/5'}`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+            <div className="mt-4 border-t border-white/5 pt-3">
+              <a href="/app/dashboard" className="block px-3 py-2 rounded-lg hover:bg-white/5">Therapist Dashboard</a>
+              <a href="/" className="block px-3 py-2 rounded-lg hover:bg-white/5">Public Site</a>
+            </div>
+          </nav>
+        </aside>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
