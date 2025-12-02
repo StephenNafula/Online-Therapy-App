@@ -8,8 +8,12 @@ on:
 
 jobs:
   server-tests:
-    name: Server tests
+    name: Server tests (matrix)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['16', '18', '20']
     env:
       NODE_ENV: test
       # Store mongod binary under the workspace to allow caching between runs
@@ -31,19 +35,21 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./.cache/mongodb
-          key: ${{ runner.os }}-mongo-binaries-${{ hashFiles('server/package-lock.json') }}
+          key: ${{ runner.os }}-mongo-binaries-${{ matrix.node-version }}-${{ hashFiles('server/package-lock.json') }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Cache npm modules (server)
         uses: actions/cache@v4
         with:
           path: server/node_modules
-          key: ${{ runner.os }}-server-node-modules-${{ hashFiles('server/package-lock.json') }}
+          key: ${{ runner.os }}-server-node-modules-${{ matrix.node-version }}-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-server-node-modules-${{ matrix.node-version }}-
           restore-keys: |
             ${{ runner.os }}-server-node-modules-
 
