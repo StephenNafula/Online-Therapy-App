@@ -158,12 +158,16 @@ export default function Meeting() {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
     setIsTherapist(storedUser && storedUser.role === 'therapist')
+
     // Support tokens in the query parameter (secure link) — useful for guest links opened on other devices
     const queryToken = (typeof window !== 'undefined') ? new URLSearchParams(window.location.search).get('token') : null
-    const token = queryToken || localStorage.getItem('token')
-    // If we have a query token, and no local token, store it briefly so the socket handshake includes it.
-    if (queryToken && !localStorage.getItem('token')) {
-      try { localStorage.setItem('token', queryToken) } catch (e) { console.warn('Could not set token in localStorage', e) }
+    const SESSION_TOKEN_KEY = 'stitch_session_token'
+    // Prefer: query token -> session token -> local storage token
+    const token = queryToken || sessionStorage.getItem(SESSION_TOKEN_KEY) || localStorage.getItem('token')
+
+    // If queryToken exists, persist it temporarily in sessionStorage so it is available for handshake but not kept across devices/browsers
+    if (queryToken) {
+      try { sessionStorage.setItem(SESSION_TOKEN_KEY, queryToken) } catch (e) { console.warn('Could not set token in sessionStorage', e) }
     }
 
     // Allow guest access - do not enforce token check
@@ -354,6 +358,14 @@ export default function Meeting() {
       if (localStreamRef.current) localStreamRef.current.getTracks().forEach(t => t.stop())
       setLocalStreamForViz(null)
       setRemoteStreamForViz(null)
+      // remove any transient session token created from a secure link to avoid leaving credentials on shared devices
+      try {
+        const SESSION_TOKEN_KEY = 'stitch_session_token'
+        const currentQueryToken = (typeof window !== 'undefined') ? new URLSearchParams(window.location.search).get('token') : null
+        if (currentQueryToken && sessionStorage.getItem(SESSION_TOKEN_KEY) === currentQueryToken) {
+          sessionStorage.removeItem(SESSION_TOKEN_KEY)
+        }
+      } catch (e) { /* noop */ }
     }
   }, [roomId, isTherapist, navigate])
 
