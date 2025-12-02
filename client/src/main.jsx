@@ -41,6 +41,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="admin" element={<AdminDashboard />} />
         </Route>
         <Route path="meeting/:roomId" element={<Meeting />} />
+        {/* Support legacy or secure links (e.g., /secure-call/:bookingId/:token) */}
+        <Route path="secure-call/:bookingId/:token?" element={<Meeting />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

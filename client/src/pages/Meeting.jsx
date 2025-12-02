@@ -121,7 +121,9 @@ const AudioVisualizer = ({ stream, isLocal, muted }) => {
 }
 
 export default function Meeting() {
-  const { roomId } = useParams()
+  const params = useParams()
+  // Support multiple param names so links that use `bookingId` or `roomId` both work
+  const roomId = params.roomId || params.bookingId || params.room || params.id
   const navigate = useNavigate()
 
   // Refs
@@ -156,7 +158,13 @@ export default function Meeting() {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
     setIsTherapist(storedUser && storedUser.role === 'therapist')
-    const token = localStorage.getItem('token')
+    // Support tokens in the query parameter (secure link) — useful for guest links opened on other devices
+    const queryToken = (typeof window !== 'undefined') ? new URLSearchParams(window.location.search).get('token') : null
+    const token = queryToken || localStorage.getItem('token')
+    // If we have a query token, and no local token, store it briefly so the socket handshake includes it.
+    if (queryToken && !localStorage.getItem('token')) {
+      try { localStorage.setItem('token', queryToken) } catch (e) { console.warn('Could not set token in localStorage', e) }
+    }
 
     // Allow guest access - do not enforce token check
 
