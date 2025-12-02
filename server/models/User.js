@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['client','therapist','admin'], default: 'client' },
   bio: String,
   specialties: [String],
+  timezone: { type: String, default: 'UTC' },
   // payment reference info displayed only (no processing)
   paymentInfo: {
     provider: String,

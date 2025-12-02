@@ -6,6 +6,7 @@ const Booking = require('../models/Booking');
 const AuditLog = require('../models/AuditLog');
 const { body, validationResult } = require('express-validator');
 const crypto = require('crypto');
+const PlatformSetting = require('../models/PlatformSetting');
 
 // Helper to log audit event
 async function logAudit(actor, action, resourceType, resourceId, details = {}, req) {
@@ -22,6 +23,14 @@ async function logAudit(actor, action, resourceType, resourceId, details = {}, r
   } catch (err) {
     console.error('Audit log failed', err);
   }
+}
+
+async function getSettingsDoc() {
+  let settings = await PlatformSetting.findOne({ key: 'global' });
+  if (!settings) {
+    settings = await PlatformSetting.create({ key: 'global' });
+  }
+  return settings;
 }
 
 // Admin: Get all therapists
@@ -183,5 +192,48 @@ router.get('/audit-logs', auth(true), requireRole('admin'), async (req, res) => 
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Admin: Get platform settings
+router.get('/settings', auth(true), requireRole('admin'), async (req, res) => {
+  try {
+    const settings = await getSettingsDoc();
+    res.json(settings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin: Update platform settings (payment instructions, call configuration)
+router.post('/settings',
+  auth(true),
+  requireRole('admin'),
+  [
+    body('manualPaymentInstructions').optional().isString(),
+    body('audioCall').optional().isObject()
+  ],
+  async (req, res) => {
+    try {
+      const settings = await getSettingsDoc();
+      if (typeof req.body.manualPaymentInstructions === 'string') {
+        settings.manualPaymentInstructions = req.body.manualPaymentInstructions;
+      }
+      if (req.body.audioCall) {
+        settings.audioCall = {
+          enabled: req.body.audioCall.enabled ?? settings.audioCall.enabled,
+          requireSecureLink: req.body.audioCall.requireSecureLink ?? settings.audioCall.requireSecureLink,
+          reminderMinutes: req.body.audioCall.reminderMinutes ?? settings.audioCall.reminderMinutes
+        };
+      }
+      settings.updatedBy = req.user.id;
+      await settings.save();
+      await logAudit(req.user.id, 'update_platform_settings', 'PlatformSetting', settings._id, req.body, req);
+      res.json(settings);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 
 module.exports = router;

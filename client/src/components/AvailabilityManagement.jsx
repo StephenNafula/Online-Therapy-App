@@ -8,8 +8,11 @@ export default function AvailabilityManagement({ token, therapistId }) {
   const [endTime, setEndTime] = useState('17:00');
   const [isRecurring, setIsRecurring] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [specificDate, setSpecificDate] = useState('');
 
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  // normalize API base so it always points to the server's `/api` prefix
+  let API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  if (!API.endsWith('/api')) API = API.replace(/\/+$/, '') + '/api';
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   const loadSlots = async () => {
@@ -34,6 +37,10 @@ export default function AvailabilityManagement({ token, therapistId }) {
       alert('Please fill in all fields');
       return;
     }
+    if (!isRecurring && !specificDate) {
+      alert('Please choose a specific date for one-time availability');
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`${API}/availability/my-availability`, {
@@ -46,12 +53,14 @@ export default function AvailabilityManagement({ token, therapistId }) {
           dayOfWeek,
           startTime,
           endTime,
-          isRecurring
+          isRecurring,
+          specificDate: !isRecurring ? specificDate : undefined
         })
       });
       if (res.ok) {
         await loadSlots();
         setShowAddSlot(false);
+        setSpecificDate('');
         alert('Availability slot added');
       } else {
         alert('Failed to add slot');
@@ -135,11 +144,26 @@ export default function AvailabilityManagement({ token, therapistId }) {
             <input
               type="checkbox"
               checked={isRecurring}
-              onChange={(e) => setIsRecurring(e.target.checked)}
+              onChange={(e) => {
+                setIsRecurring(e.target.checked);
+                if (e.target.checked) setSpecificDate('');
+              }}
               className="accent-primary"
             />
             <span className="text-sm">Recurring (every week)</span>
           </label>
+
+          {!isRecurring && (
+            <label className="flex flex-col">
+              <span className="text-sm font-semibold mb-1">Specific Date</span>
+              <input
+                type="date"
+                value={specificDate}
+                onChange={(e) => setSpecificDate(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+              />
+            </label>
+          )}
 
           <button
             onClick={handleAddSlot}
@@ -164,7 +188,7 @@ export default function AvailabilityManagement({ token, therapistId }) {
               >
                 <div>
                   <p className="font-semibold">
-                    {slot.isRecurring ? days[slot.dayOfWeek] : 'One-time'}{' '}
+                    {slot.isRecurring ? days[slot.dayOfWeek] : (slot.specificDate ? new Date(slot.specificDate).toLocaleDateString() : 'One-time')}{' '}
                     {slot.startTime} - {slot.endTime}
                   </p>
                   <p className="text-xs text-secondary-text">

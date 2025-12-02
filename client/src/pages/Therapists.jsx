@@ -11,9 +11,11 @@ export default function Therapists(){
     fetch('http://localhost:4000/api/users')
       .then(r=>r.json())
       .then(data => {
+        // Ensure we have an array; some error pages return HTML or object
+        const arr = Array.isArray(data) ? data : [];
         // Filter for therapists if role is available
-        const therapistList = data.filter(u => u.role === 'therapist' || u.isTherapist)
-        setTherapists(therapistList.length > 0 ? therapistList : data)
+        const therapistList = arr.filter(u => u && (u.role === 'therapist' || u.isTherapist))
+        setTherapists(therapistList.length > 0 ? therapistList : arr)
         setLoading(false)
       })
       .catch(err => {

@@ -39,8 +39,8 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="admin" element={<AdminDashboard />} />
-          <Route path="meeting/:roomId" element={<Meeting />} />
         </Route>
+        <Route path="meeting/:roomId" element={<Meeting />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

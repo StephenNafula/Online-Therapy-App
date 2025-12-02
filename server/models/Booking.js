@@ -5,7 +5,7 @@ const BookingSchema = new mongoose.Schema({
   therapist: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   scheduledAt: { type: Date, required: true },
   durationMinutes: { type: Number, default: 50 },
-  status: { type: String, enum: ['scheduled','verified','completed','cancelled'], default: 'scheduled' },
+  status: { type: String, enum: ['pending','scheduled','verified','completed','cancelled'], default: 'pending' },
   externalPayment: {
     provider: String,
     reference: String,

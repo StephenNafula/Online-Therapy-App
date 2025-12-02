@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { io as ioClient } from 'socket.io-client'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { post } from '../api'
 import ConsentModal from '../components/ConsentModal'
@@ -21,8 +22,19 @@ export default function Booking(){
   const [preferredDate, setPreferredDate] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
   const [timezone, setTimezone] = useState('UTC')
+  const [availableSlots, setAvailableSlots] = useState([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [availableSlotsTz, setAvailableSlotsTz] = useState('UTC')
+  const [therapistName, setTherapistName] = useState('')
+  const [therapistEmail, setTherapistEmail] = useState('')
+  const [therapistFetchedId, setTherapistFetchedId] = useState('')
+  const [therapistOptions, setTherapistOptions] = useState([])
+  const [therapistTimezone, setTherapistTimezone] = useState('')
+  const [therapistLoading, setTherapistLoading] = useState(false)
+  const [scheduledAtISO, setScheduledAtISO] = useState('')
   const [sessionMode, setSessionMode] = useState('online')
   const [bookingNote, setBookingNote] = useState('')
+  const [allowManualTime, setAllowManualTime] = useState(false)
 
   // Payment Details
   const [paymentMethod, setPaymentMethod] = useState('mpesa')
@@ -87,6 +99,136 @@ export default function Booking(){
     return Object.keys(newErrors).length === 0
   }
 
+  // Prevent past dates and fetch available slots when a date is selected
+  const handleDateChange = async (val) => {
+    // disallow past dates by comparing YYYY-MM-DD strings (avoids timezone drift)
+    const todayStr = new Date().toISOString().slice(0,10)
+    if (val < todayStr) {
+      setErrors(e => ({ ...e, preferredDate: 'Cannot select a past date' }))
+      setPreferredDate('')
+      return
+    }
+    setPreferredDate(val)
+    setErrors(e => ({ ...e, preferredDate: null }))
+
+    // fetch available slots for therapistId if present
+    const idToUse = therapistId || therapistFetchedId
+    if (idToUse) {
+      setLoadingSlots(true)
+      try {
+        // normalize API base so it always includes /api
+        let api = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+        if (!api.endsWith('/api')) api = api.replace(/\/+$/, '') + '/api'
+        const duration = sessionDuration || 60
+        const res = await fetch(`${api}/availability/public/${idToUse}?date=${val}&duration=${duration}`)
+        if (res.ok) {
+          const data = await res.json()
+          // normalize slots: support both array of strings and array of objects {label, start, end}
+          const raw = data.slots || []
+          const normalized = raw.map(s => {
+            if (typeof s === 'string') return { label: s, start: null, end: null }
+            return { label: s.label || s.time || '', start: s.start || null, end: s.end || null }
+          })
+          setAvailableSlots(normalized)
+          // if there's exactly one slot, auto-select it for convenience
+          if (normalized.length === 1) {
+            const only = normalized[0]
+            setPreferredTime(only.label || '')
+            setScheduledAtISO(only.start || '')
+          }
+          setAvailableSlotsTz(data.timezone || 'UTC')
+        } else {
+          setAvailableSlots([])
+          setAvailableSlotsTz('UTC')
+        }
+      } catch (err) {
+        console.error('Failed to load slots', err)
+        setAvailableSlots([])
+      } finally {
+        setLoadingSlots(false)
+      }
+    }
+  }
+
+  // If we fetched a therapist id after the user already selected a date, fetch slots for that therapist
+  useEffect(() => {
+    if (!preferredDate) return
+    // if therapistFetchedId just became available and there's no route therapistId, refresh slots
+    if (!therapistId && therapistFetchedId) {
+      handleDateChange(preferredDate)
+    }
+  }, [therapistFetchedId, therapistId, preferredDate])
+
+  // Load therapist info for display and for single-therapist fallback
+  useEffect(() => {
+    async function loadTherapist() {
+      setTherapistLoading(true)
+      try {
+        const api = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+        if (therapistId) {
+          const res = await fetch(`${api}/users/${therapistId}`)
+          if (res.ok) {
+            const t = await res.json()
+            setTherapistName(t.name || '')
+            setTherapistEmail(t.email || '')
+            setTherapistTimezone(t.timezone || '')
+            setTherapistFetchedId(t._id || therapistId)
+          }
+        } else {
+          const res = await fetch(`${api}/users?role=therapist`)
+          if (res.ok) {
+            const data = await res.json()
+            const therapists = Array.isArray(data) ? data.filter(Boolean) : []
+            setTherapistOptions(therapists)
+            if (therapists.length > 0) {
+              const first = therapists[0]
+              setTherapistName(first.name || '')
+              setTherapistEmail(first.email || '')
+              setTherapistTimezone(first.timezone || '')
+              setTherapistFetchedId(first._id || '')
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load therapist info', err)
+      }
+      setTherapistLoading(false)
+    }
+    loadTherapist()
+  }, [therapistId])
+
+  const handleTherapistChange = (id) => {
+    if (!id) return
+    const selected = therapistOptions.find(t => t._id === id)
+    if (selected) {
+      setTherapistFetchedId(selected._id)
+      setTherapistName(selected.name || '')
+      setTherapistEmail(selected.email || '')
+      setTherapistTimezone(selected.timezone || '')
+    } else {
+      setTherapistFetchedId(id)
+    }
+  }
+
+  // Listen for availability updates via socket and refresh slots when changed
+  useEffect(() => {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:4000')
+    const socket = ioClient(socketUrl)
+    socket.on('connect', () => {})
+    socket.on('availability:updated', (payload) => {
+      try {
+        if (!payload) return
+        const idToWatch = therapistId || therapistFetchedId
+        if (payload.therapistId && idToWatch && payload.therapistId === idToWatch) {
+          if (preferredDate) handleDateChange(preferredDate)
+        }
+      } catch (err) {
+        console.error('availability socket handler error', err)
+      }
+    })
+    return () => socket.disconnect()
+  }, [therapistId, therapistFetchedId, preferredDate])
+
   async function handleSubmit(e) {
     e.preventDefault()
     
@@ -114,6 +256,8 @@ export default function Booking(){
           sessionDuration,
           preferredDate,
           preferredTime,
+          // if we have an ISO start from the availability API, include it for precise scheduling
+          scheduledAt: scheduledAtISO || undefined,
           timezone,
           mode: sessionMode,
           note: bookingNote
@@ -309,6 +453,44 @@ export default function Booking(){
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-black mb-2">Book Your Therapy Session</h1>
           <p className="text-secondary-text text-lg">Complete the form below to request your booking</p>
+          {(therapistLoading) ? (
+            <div className="mt-2 flex items-center gap-3">
+              <div className="h-4 w-40 bg-white/10 animate-pulse rounded" />
+              <div className="h-4 w-24 bg-white/8 animate-pulse rounded" />
+            </div>
+          ) : (therapistName || therapistId) && (
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <p className="text-sm text-primary">Therapist: <span className="font-semibold text-white">{therapistName || 'Assigned Therapist'}</span>{therapistId ? (<span className="text-xs text-secondary-text"> &nbsp; (ID: {therapistId})</span>) : null}</p>
+              {therapistTimezone && (
+                <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-xs rounded-full px-3 py-1 w-max">
+                  <span className="font-mono text-xs text-white">{therapistTimezone}</span>
+                </div>
+              )}
+            </div>
+          )}
+          {!therapistId && therapistOptions.length > 1 && (
+            <div className="mt-4 max-w-sm">
+              <label className="flex flex-col">
+                <span className="text-sm font-semibold text-secondary-text mb-2">Choose a therapist *</span>
+                <select
+                  value={therapistFetchedId}
+                  onChange={e => {
+                    handleTherapistChange(e.target.value)
+                    if (preferredDate) {
+                      setTimeout(() => handleDateChange(preferredDate), 0)
+                    }
+                  }}
+                  className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50"
+                >
+                  {therapistOptions.map(option => (
+                    <option key={option._id} value={option._id} className="bg-background-dark text-white">
+                      {option.name || option.email}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -381,16 +563,26 @@ export default function Booking(){
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <label className="flex flex-col">
                 <span className="text-sm font-semibold text-secondary-text mb-2">Therapy Type *</span>
-                <select
-                  value={therapyType}
-                  onChange={e => setTherapyType(e.target.value)}
-                  className={`bg-white/10 border ${errors.therapyType ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
-                >
-                  <option value="">Select a therapy type</option>
-                  {therapyTypes.map(type => (
-                    <option key={type} value={type} className="bg-background-dark text-white">{type}</option>
-                  ))}
-                </select>
+                {selectedService ? (
+                  <select
+                    value={therapyType}
+                    disabled
+                    className={`bg-white/10 border ${errors.therapyType ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 cursor-not-allowed`}
+                  >
+                    <option value={therapyType}>{therapyType}</option>
+                  </select>
+                ) : (
+                  <select
+                    value={therapyType}
+                    onChange={e => setTherapyType(e.target.value)}
+                    className={`bg-white/10 border ${errors.therapyType ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
+                  >
+                    <option value="">Select a therapy type</option>
+                    {therapyTypes.map(type => (
+                      <option key={type} value={type} className="bg-background-dark text-white">{type}</option>
+                    ))}
+                  </select>
+                )}
                 {errors.therapyType && <span className="text-red-400 text-xs mt-1">{errors.therapyType}</span>}
               </label>
 
@@ -410,7 +602,8 @@ export default function Booking(){
                 <input
                   type="date"
                   value={preferredDate}
-                  onChange={e => setPreferredDate(e.target.value)}
+                  onChange={e => handleDateChange(e.target.value)}
+                  min={new Date().toISOString().slice(0,10)}
                   className={`bg-white/10 border ${errors.preferredDate ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
                 />
                 {errors.preferredDate && <span className="text-red-400 text-xs mt-1">{errors.preferredDate}</span>}
@@ -418,12 +611,68 @@ export default function Booking(){
 
               <label className="flex flex-col">
                 <span className="text-sm font-semibold text-secondary-text mb-2">Preferred Session Time *</span>
-                <input
-                  type="time"
-                  value={preferredTime}
-                  onChange={e => setPreferredTime(e.target.value)}
-                  className={`bg-white/10 border ${errors.preferredTime ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
-                />
+                {/* Show loader, timezone header, no-slots message, or the select/input */}
+                <div className="mb-2">
+                  {loadingSlots ? (
+                    <div className="text-sm text-secondary-text flex items-center gap-2">
+                      <span className="material-symbols-outlined animate-spin">hourglass_empty</span>
+                      <span>Loading available slots...</span>
+                    </div>
+                  ) : preferredDate ? (
+                    availableSlots && availableSlots.length > 0 ? (
+                      <div className="text-sm text-secondary-text">Available slots (Therapist timezone: <span className="font-semibold text-white">{availableSlotsTz}</span>)</div>
+                    ) : (
+                      <div className="text-sm text-yellow-300">No available slots for <span className="font-semibold text-white">{therapistName || 'this therapist'}</span> on this date. Try another date or contact support.</div>
+                    )
+                  ) : null}
+                </div>
+
+                {availableSlots && availableSlots.length > 0 ? (
+                  <select
+                    value={preferredTime}
+                    onChange={e => {
+                      const val = e.target.value
+                      // selected value will be either a label or ISO; we store label for display and scheduledAtISO for exact iso
+                      const found = availableSlots.find(s => (s.start === val || s.label === val || s.start === val))
+                      if (found) {
+                        setPreferredTime(found.label)
+                        setScheduledAtISO(found.start || '')
+                      } else {
+                        setPreferredTime(val)
+                        setScheduledAtISO('')
+                      }
+                    }}
+                    className={`bg-white/10 border ${errors.preferredTime ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
+                  >
+                    <option value="">Select an available time</option>
+                    {availableSlots.map(slot => (
+                      <option key={slot.start || slot.label} value={slot.start || slot.label}>{slot.label} ({availableSlotsTz})</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="time"
+                      value={preferredTime}
+                      onChange={e => { setPreferredTime(e.target.value); setScheduledAtISO('') }}
+                      disabled={!allowManualTime}
+                      placeholder={allowManualTime ? 'Select a time' : 'No available slots'}
+                      className={`bg-white/10 border ${errors.preferredTime ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white ${allowManualTime ? 'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50' : 'opacity-60 cursor-not-allowed'}`}
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setAllowManualTime(m => !m)}
+                        className={`text-sm rounded px-3 py-2 ${allowManualTime ? 'bg-red-600' : 'bg-primary'} text-white`}
+                      >
+                        {allowManualTime ? 'Disable manual time' : 'Request custom time'}
+                      </button>
+                      {!allowManualTime && (
+                        <p className="text-xs text-yellow-300">No available slots for <span className="font-semibold text-white">{therapistName || 'this therapist'}</span>. You can request a custom time.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {errors.preferredTime && <span className="text-red-400 text-xs mt-1">{errors.preferredTime}</span>}
               </label>
 
@@ -479,9 +728,9 @@ export default function Booking(){
                   onChange={e => setPaymentMethod(e.target.value)}
                   className={`bg-white/10 border ${errors.paymentMethod ? 'border-red-500' : 'border-white/20'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50`}
                 >
+                  <option value="paypal" className="bg-background-dark text-white">PayPal</option>
                   <option value="mpesa" className="bg-background-dark text-white">M-Pesa</option>
                   <option value="bank" className="bg-background-dark text-white">Bank Transfer</option>
-                  <option value="paypal" className="bg-background-dark text-white">PayPal</option>
                   <option value="other" className="bg-background-dark text-white">Other</option>
                 </select>
                 {errors.paymentMethod && <span className="text-red-400 text-xs mt-1">{errors.paymentMethod}</span>}

@@ -2,6 +2,16 @@
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
 async function parseResponse(res) {
+  // Global unauthorized handler: if server returns 401, clear local session and redirect to login
+  if (res.status === 401) {
+    try {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    } catch (e) {}
+    // Navigate to login page to force re-authentication
+    try { window.location.href = '/login' } catch (e) {}
+    return { success: false, status: 401, message: 'Unauthorized' }
+  }
   const contentType = res.headers.get('content-type') || ''
   // If JSON, parse safely. If not, return text wrapped in an object so callers don't try to parse HTML as JSON.
   if (contentType.includes('application/json')) {

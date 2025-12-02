@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-export default function SecureMessaging({ token, userRole, prefillRecipient }) {
+export default function SecureMessaging({ token, userRole, prefillRecipient, prefillSubject }) {
   const [messages, setMessages] = useState([]);
   const [showCompose, setShowCompose] = useState(false);
   const [recipientId, setRecipientId] = useState('');
+  const [recipients, setRecipients] = useState([]);
+  const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  let API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  if (!API.endsWith('/api')) API = API.replace(/\/+$/, '') + '/api';
+
+  const recipientRole = userRole === 'therapist' ? 'admin' : userRole === 'admin' ? 'therapist' : '';
 
   const loadMessages = async () => {
     try {
@@ -22,16 +27,47 @@ export default function SecureMessaging({ token, userRole, prefillRecipient }) {
     }
   };
 
+  const loadRecipients = async () => {
+    setLoadingRecipients(true);
+    try {
+      let endpoint = `${API}/users`;
+      if (recipientRole) {
+        endpoint += `?role=${recipientRole}`;
+      }
+      const res = await fetch(endpoint, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecipients(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Failed to load recipients', err);
+    } finally {
+      setLoadingRecipients(false);
+    }
+  };
+
   useEffect(() => {
     loadMessages();
-    // if a prefill recipient is provided, open compose with it
+    loadRecipients();
+    const interval = setInterval(loadMessages, 30000);
+    return () => clearInterval(interval);
+  }, [token, userRole]);
+
+  useEffect(() => {
     if (prefillRecipient) {
       setRecipientId(prefillRecipient);
       setShowCompose(true);
     }
-    const interval = setInterval(loadMessages, 30000); // refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
+  }, [prefillRecipient]);
+
+  useEffect(() => {
+    if (prefillSubject) {
+      setSubject(prefillSubject);
+      setShowCompose(true);
+    }
+  }, [prefillSubject]);
 
   const handleSendMessage = async () => {
     if (!recipientId || !subject || !content) {
@@ -94,14 +130,25 @@ export default function SecureMessaging({ token, userRole, prefillRecipient }) {
       {showCompose && (
         <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4 space-y-3">
           <label className="flex flex-col">
-            <span className="text-sm font-semibold mb-1">Recipient Email</span>
-            <input
-              type="email"
-              value={recipientId}
-              onChange={(e) => setRecipientId(e.target.value)}
-              placeholder="admin@happinesstherapy.com"
-              className="bg-white/10 border border-white/20 rounded px-3 py-2 text-white placeholder:text-white/40"
-            />
+            <span className="text-sm font-semibold mb-1">Recipient</span>
+            {loadingRecipients ? (
+              <p className="text-xs text-secondary-text">Loading recipients...</p>
+            ) : recipients.length > 0 ? (
+              <select
+                value={recipientId}
+                onChange={(e) => setRecipientId(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded px-3 py-2 text-white"
+              >
+                <option value="">Select a recipient</option>
+                {recipients.map((recipient) => (
+                  <option key={recipient._id} value={recipient._id} className="bg-background-dark text-white">
+                    {(recipient.name || recipient.email) + (recipient.email ? ` (${recipient.email})` : '')}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-xs text-yellow-300">No eligible recipients found.</p>
+            )}
           </label>
 
           <label className="flex flex-col">

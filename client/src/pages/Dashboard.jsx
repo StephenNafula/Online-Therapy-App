@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { io as ioClient } from 'socket.io-client'
 import { useNavigate } from 'react-router-dom'
-import { get, patch } from '../api'
+import { get, patch, post } from '../api'
 import AvailabilityManagement from '../components/AvailabilityManagement'
 import SecureMessaging from '../components/SecureMessaging'
+import SessionNotesEditor from '../components/SessionNotesEditor'
+import AudioCallComponent from '../components/AudioCallComponent'
 
 export default function Dashboard() {
   const [bookings, setBookings] = useState([])
@@ -18,15 +20,34 @@ export default function Dashboard() {
   const [pmProvider, setPmProvider] = useState('mpesa')
   const [pmReference, setPmReference] = useState('')
   const [pmAmount, setPmAmount] = useState('')
-  const [noteModalOpen, setNoteModalOpen] = useState(false)
-  const [noteBookingId, setNoteBookingId] = useState(null)
-  const [noteText, setNoteText] = useState('')
   const [activeTab, setActiveTab] = useState('bookings')
   const [messagePrefill, setMessagePrefill] = useState('')
+  const [messageSubjectPrefill, setMessageSubjectPrefill] = useState('')
+  const [clientDirectory, setClientDirectory] = useState([])
+  const [clientsLoading, setClientsLoading] = useState(false)
+  const [rescheduleModal, setRescheduleModal] = useState({ open: false, bookingId: null, date: '', time: '' })
+  const [resendLoadingId, setResendLoadingId] = useState(null)
   const lastPollRef = useRef(new Date())
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || 'null')
   const token = localStorage.getItem('token')
+
+  const loadClients = useCallback(async () => {
+    if (user?.role !== 'therapist') return
+    const authToken = localStorage.getItem('token')
+    if (!authToken) return
+    setClientsLoading(true)
+    try {
+      const data = await get('/users/me/clients', authToken)
+      if (Array.isArray(data)) {
+        setClientDirectory(data)
+      }
+    } catch (err) {
+      console.error('Failed to load clients', err)
+    } finally {
+      setClientsLoading(false)
+    }
+  }, [user?.role])
 
   // Initial load
   useEffect(() => {
@@ -44,11 +65,10 @@ export default function Dashboard() {
 
         // Load summary
         try {
-          const summaryRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/bookings/reports/summary`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          if (summaryRes.ok) {
-            const s = await summaryRes.json()
+          const s = await get('/bookings/reports/summary', token)
+          if (s && !s.success && s.status === 401) {
+            // handled globally in api.js
+          } else if (s) {
             setSummary(s)
           }
         } catch (err) {
@@ -97,6 +117,12 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    if (activeTab === 'clients' && user?.role === 'therapist') {
+      loadClients()
+    }
+  }, [activeTab, user?.role, loadClients])
+
   // Socket.IO
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -137,19 +163,62 @@ export default function Dashboard() {
   async function handleVerifyPayment(id) {
     const token = localStorage.getItem('token')
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/bookings/${id}/verify-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-        body: JSON.stringify({ provider: pmProvider, reference: pmReference, amount: pmAmount ? parseFloat(pmAmount) : 0 })
-      })
-      const data = await res.json()
+      const payload = { provider: pmProvider, reference: pmReference, amount: pmAmount ? parseFloat(pmAmount) : 0 }
+      const data = await post(`/bookings/${id}/verify-payment`, payload, token)
       if (data && data._id) {
         setBookings(b => b.map(x => (x._id === data._id ? data : x)))
         alert('Payment verified')
         setPaymentModalOpen(false)
+      } else if (data && data.status === 409) {
+        alert(data.message || 'Booking already verified.')
       }
     } catch (err) {
-      console.error('verify error', err)
+      if (err?.status === 409 && user?.role === 'admin') {
+        const override = window.confirm('This booking is already verified. Override and resend confirmation?')
+        if (override) {
+          try {
+            const data = await post(`/bookings/${id}/verify-payment`, { provider: pmProvider, reference: pmReference, amount: pmAmount ? parseFloat(pmAmount) : 0, override: true }, token)
+            if (data && data._id) {
+              setBookings(b => b.map(x => (x._id === data._id ? data : x)))
+              alert('Booking re-confirmed and link resent.')
+              setPaymentModalOpen(false)
+            }
+            return
+          } catch (overrideErr) {
+            console.error('override verify error', overrideErr)
+            alert('Override failed')
+          }
+        }
+      } else {
+        console.error('verify error', err)
+        alert(err?.message || 'Verification failed')
+      }
+    }
+  }
+
+  async function handleResendLink(id) {
+    if (user?.role !== 'admin') {
+      alert('Only admins can resend confirmed links.')
+      return
+    }
+    const confirmed = window.confirm('Resend the secure call link to the client?')
+    if (!confirmed) return
+    const token = localStorage.getItem('token')
+    if (!token) return
+    setResendLoadingId(id)
+    try {
+      const data = await post(`/bookings/${id}/verify-payment`, { override: true }, token)
+      if (data && data._id) {
+        setBookings(b => b.map(x => (x._id === data._id ? data : x)))
+        alert('Secure link resent to client.')
+      } else if (data && data.message) {
+        alert(data.message)
+      }
+    } catch (err) {
+      console.error('resend link error', err)
+      alert(err?.message || 'Failed to resend link')
+    } finally {
+      setResendLoadingId(null)
     }
   }
 
@@ -166,36 +235,51 @@ export default function Dashboard() {
     }
   }
 
-  async function handleSaveNotes(id) {
-    const token = localStorage.getItem('token')
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/bookings/${id}/notes`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-        body: JSON.stringify({ notes: noteText })
-      })
-      const data = await res.json()
-      if (data && data._id) {
-        setBookings(b => b.map(x => (x._id === data._id ? data : x)))
-        alert('Notes saved')
-        setNoteModalOpen(false)
-        setNoteBookingId(null)
-        setNoteText('')
-      }
-    } catch (err) {
-      console.error('notes error', err)
-    }
+
+
+  const handleStart = roomId => navigate(`/app/meeting/${roomId}`)
+
+  const openRescheduleModal = booking => {
+    const iso = new Date(booking.scheduledAt).toISOString()
+    setRescheduleModal({
+      open: true,
+      bookingId: booking._id,
+      date: iso.slice(0, 10),
+      time: iso.slice(11, 16)
+    })
   }
 
-  const handleStart = roomId => navigate(`/meeting/${roomId}`)
+  const closeRescheduleModal = () => setRescheduleModal({ open: false, bookingId: null, date: '', time: '' })
+
+  const handleRescheduleSave = async () => {
+    if (!rescheduleModal.bookingId || !rescheduleModal.date || !rescheduleModal.time) {
+      alert('Select a new date and time')
+      return
+    }
+    const authToken = localStorage.getItem('token')
+    if (!authToken) return
+    try {
+      const newIso = `${rescheduleModal.date}T${rescheduleModal.time}`
+      const res = await patch(`/bookings/${rescheduleModal.bookingId}/reschedule`, { scheduledAt: newIso }, authToken)
+      if (res && res._id) {
+        setBookings(b => b.map(x => (x._id === res._id ? res : x)))
+        closeRescheduleModal()
+        alert('Booking rescheduled')
+      } else if (res && res.message) {
+        alert(res.message)
+      }
+    } catch (err) {
+      console.error('reschedule error', err)
+      alert('Failed to reschedule booking')
+    }
+  }
 
   return (
     <div className="relative flex min-h-screen bg-background-dark text-white">
       {/* Sidebar */}
       <aside
-        className={`fixed z-20 h-full w-64 transform bg-background-dark p-4 transition-transform duration-300 md:relative md:translate-x-0 md:border-r md:border-white/10 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed z-20 h-full w-64 transform bg-background-dark p-4 transition-transform duration-300 md:relative md:translate-x-0 md:border-r md:border-white/10 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="mb-8 flex items-center gap-3 px-2">
           <span className="material-symbols-outlined text-primary text-3xl">neurology</span>
@@ -206,11 +290,10 @@ export default function Dashboard() {
           <li>
             <button
               onClick={() => { setActiveTab('bookings'); setIsSidebarOpen(false) }}
-              className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${
-                activeTab === 'bookings'
-                  ? 'bg-primary/20 text-primary'
-                  : 'text-white hover:bg-white/10'
-              }`}
+              className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${activeTab === 'bookings'
+                ? 'bg-primary/20 text-primary'
+                : 'text-white hover:bg-white/10'
+                }`}
             >
               <span className="material-symbols-outlined">dashboard</span>
               <p className="text-base font-semibold">Dashboard</p>
@@ -221,11 +304,10 @@ export default function Dashboard() {
               <li>
                 <button
                   onClick={() => { setActiveTab('availability'); setIsSidebarOpen(false) }}
-                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${
-                    activeTab === 'availability'
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${activeTab === 'availability'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white hover:bg-white/10'
+                    }`}
                 >
                   <span className="material-symbols-outlined">schedule</span>
                   <p className="text-base font-semibold">My Availability</p>
@@ -234,11 +316,10 @@ export default function Dashboard() {
               <li>
                 <button
                   onClick={() => { setActiveTab('messages'); setIsSidebarOpen(false) }}
-                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${
-                    activeTab === 'messages'
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${activeTab === 'messages'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white hover:bg-white/10'
+                    }`}
                 >
                   <span className="material-symbols-outlined">chat_bubble</span>
                   <p className="text-base font-semibold">Messages</p>
@@ -246,15 +327,39 @@ export default function Dashboard() {
               </li>
               <li>
                 <button
+                  onClick={() => { setActiveTab('clients'); setIsSidebarOpen(false) }}
+                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${activeTab === 'clients'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white hover:bg-white/10'
+                    }`}
+                >
+                  <span className="material-symbols-outlined">group</span>
+                  <p className="text-base font-semibold">Clients</p>
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => { setActiveTab('notes'); setIsSidebarOpen(false) }}
-                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${
-                    activeTab === 'notes'
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-white hover:bg-white/10'
-                  }`}
+                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors ${activeTab === 'notes'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-white hover:bg-white/10'
+                    }`}
                 >
                   <span className="material-symbols-outlined">notes</span>
                   <p className="text-base font-semibold">Session Notes</p>
+                </button>
+              </li>
+            </>
+          )}
+          {user?.role === 'admin' && (
+            <>
+              <li>
+                <button
+                  onClick={() => { window.location.href = '/app/admin'; setIsSidebarOpen(false) }}
+                  className={`w-full flex h-12 items-center gap-4 rounded-lg px-4 transition-colors text-white hover:bg-white/10`}
+                >
+                  <span className="material-symbols-outlined">admin_panel_settings</span>
+                  <p className="text-base font-semibold">Admin Panel</p>
                 </button>
               </li>
             </>
@@ -443,21 +548,26 @@ export default function Dashboard() {
                                             }}
                                             className="rounded bg-amber-500 px-3 py-1 text-black text-xs"
                                           >
-                                            Verify
+                                            Approve
                                           </button>
+                                          {user?.role === 'therapist' && (
+                                            <button onClick={() => openRescheduleModal(b)} className="rounded border px-3 py-1 text-xs">
+                                              Reschedule
+                                            </button>
+                                          )}
                                           <button onClick={() => handleUpdateStatus(b._id, 'completed')} className="rounded bg-green-600 px-3 py-1 text-white text-xs">
                                             Complete
                                           </button>
-                                          <button
-                                            onClick={() => {
-                                              setNoteBookingId(b._id)
-                                              setNoteText(b.notes || '')
-                                              setNoteModalOpen(true)
-                                            }}
-                                            className="rounded border px-3 py-1 text-xs"
-                                          >
-                                            Note
-                                          </button>
+
+                                          {user?.role === 'admin' && b.status === 'verified' && (
+                                            <button
+                                              onClick={() => handleResendLink(b._id)}
+                                              disabled={resendLoadingId === b._id}
+                                              className="rounded bg-blue-600 px-3 py-1 text-white text-xs"
+                                            >
+                                              {resendLoadingId === b._id ? 'Sending...' : 'Resend Link'}
+                                            </button>
+                                          )}
                                         </>
                                       )}
                                     </div>
@@ -485,13 +595,12 @@ export default function Dashboard() {
                                     </span>
                                   )}
                                   <span
-                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                                      b.status === 'completed'
-                                        ? 'bg-green-500/20 text-green-400'
-                                        : b.status === 'scheduled'
+                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${b.status === 'completed'
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : b.status === 'scheduled'
                                         ? 'bg-blue-500/20 text-blue-400'
                                         : 'bg-red-500/20 text-red-400'
-                                    } mt-2`}
+                                      } mt-2`}
                                   >
                                     <span className="material-symbols-outlined text-sm">
                                       {b.status === 'completed' ? 'check_circle' : b.status === 'scheduled' ? 'schedule' : 'cancel'}
@@ -503,14 +612,10 @@ export default function Dashboard() {
                             </div>
 
                             <div className="flex flex-wrap gap-2 items-start mt-4">
-                              {b.status === 'scheduled' && (
-                                <button
-                                  onClick={() => handleStart(b.roomId)}
-                                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold transition-all hover:bg-primary/90 text-sm"
-                                >
-                                  <span className="material-symbols-outlined">video_call</span>
-                                  Join Call
-                                </button>
+                              {(b.status === 'scheduled' || b.status === 'verified') && (
+                                <div className="w-full sm:w-auto">
+                                  <AudioCallComponent booking={b} token={token} userRole={user?.role} />
+                                </div>
                               )}
 
                               {(user?.role === 'therapist' || user?.role === 'admin') && (
@@ -526,8 +631,27 @@ export default function Dashboard() {
                                     className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-white font-bold transition-all hover:bg-amber-600 text-sm"
                                   >
                                     <span className="material-symbols-outlined">paid</span>
-                                    Verify Payment
+                                    Approve &amp; Send Link
                                   </button>
+
+                                  <button
+                                    onClick={() => openRescheduleModal(b)}
+                                    className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-white font-bold transition-all hover:bg-white/5 text-sm"
+                                  >
+                                    <span className="material-symbols-outlined">calendar_today</span>
+                                    Reschedule
+                                  </button>
+
+                                  {user?.role === 'admin' && b.status === 'verified' && (
+                                    <button
+                                      onClick={() => handleResendLink(b._id)}
+                                      disabled={resendLoadingId === b._id}
+                                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white font-bold transition-all hover:bg-blue-700 text-sm disabled:opacity-60"
+                                    >
+                                      <span className="material-symbols-outlined">send</span>
+                                      {resendLoadingId === b._id ? 'Sending...' : 'Resend Link'}
+                                    </button>
+                                  )}
 
                                   <button
                                     onClick={() => handleUpdateStatus(b._id, 'completed')}
@@ -547,22 +671,13 @@ export default function Dashboard() {
                                     </button>
                                   )}
 
-                                  <button
-                                    onClick={() => {
-                                      setNoteBookingId(b._id)
-                                      setNoteText(b.notes || '')
-                                      setNoteModalOpen(true)
-                                    }}
-                                    className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-white font-bold transition-all hover:bg-white/5 text-sm"
-                                  >
-                                    <span className="material-symbols-outlined">notes</span>
-                                    Add Note
-                                  </button>
+
 
                                   <button
                                     onClick={() => {
                                       // open messages tab and prefill recipient with client email
-                                      setMessagePrefill(b.client?.email || '')
+                                      setMessagePrefill(b.client?._id || b.client || '')
+                                      setMessageSubjectPrefill(b.scheduledAt ? `Regarding your session on ${new Date(b.scheduledAt).toLocaleString()}` : `Regarding your session`)
                                       setActiveTab('messages')
                                       setIsSidebarOpen(false)
                                     }}
@@ -597,7 +712,12 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'messages' && user?.role === 'therapist' && (
-            <SecureMessaging token={token} userId={user._id} />
+            <SecureMessaging
+              token={token}
+              userId={user._id}
+              prefillRecipient={messagePrefill}
+              prefillSubject={messageSubjectPrefill}
+            />
           )}
 
           {activeTab === 'notes' && user?.role === 'therapist' && (
@@ -612,34 +732,56 @@ export default function Dashboard() {
                 ) : (
                   <div className="grid grid-cols-1 gap-4">
                     {filteredBookings.map(b => (
-                      <div key={b._id} className="rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 p-4">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-white font-bold">{b.client?.name || 'Client'}</h3>
-                            <p className="text-gray-400 text-sm">{new Date(b.scheduledAt).toLocaleString()}</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              setNoteBookingId(b._id)
-                              setNoteText(b.notes || '')
-                              setNoteModalOpen(true)
-                            }}
-                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white font-bold transition-all hover:bg-primary/90"
-                          >
-                            <span className="material-symbols-outlined">edit</span>
-                            Edit Notes
-                          </button>
-                        </div>
-                        {b.notes && (
-                          <div className="mt-4 p-3 rounded-lg bg-black/20 border border-white/5">
-                            <p className="text-gray-300 text-sm whitespace-pre-wrap">{b.notes}</p>
-                          </div>
-                        )}
-                      </div>
+                      <SessionNotesEditor key={b._id} booking={b} token={token} />
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'clients' && user?.role === 'therapist' && (
+            <div className="bg-black/30 border border-white/10 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Client Directory</h2>
+                  <p className="text-sm text-gray-400">View clients who have booked sessions with you.</p>
+                </div>
+                <button
+                  onClick={loadClients}
+                  className="px-4 py-2 rounded-lg border border-white/20 text-sm text-white hover:bg-white/10"
+                >
+                  Refresh
+                </button>
+              </div>
+              {clientsLoading ? (
+                <p className="text-gray-300">Loading clients...</p>
+              ) : clientDirectory.length === 0 ? (
+                <p className="text-gray-400">No clients found.</p>
+              ) : (
+                <div className="overflow-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="text-gray-300">
+                        <th className="p-2">Client</th>
+                        <th className="p-2">Email</th>
+                        <th className="p-2">Last Session</th>
+                        <th className="p-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientDirectory.map(client => (
+                        <tr key={client.id} className="border-t border-white/10">
+                          <td className="p-2">{client.name || 'Client'}</td>
+                          <td className="p-2">{client.email || '—'}</td>
+                          <td className="p-2">{client.lastSession ? new Date(client.lastSession).toLocaleString() : '—'}</td>
+                          <td className="p-2 capitalize">{client.status || 'pending'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -689,35 +831,38 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Notes Modal */}
-          {noteModalOpen && (
+
+
+          {/* Reschedule Modal */}
+          {rescheduleModal.open && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
               <div className="w-full max-w-md rounded-lg bg-background-dark p-6 text-white border border-white/10">
-                <h3 className="text-lg font-bold mb-4">Session Notes</h3>
+                <h3 className="text-lg font-bold mb-4">Reschedule Session</h3>
                 <div className="flex flex-col gap-3">
-                  <textarea
-                    value={noteText}
-                    onChange={e => setNoteText(e.target.value)}
-                    rows={6}
-                    className="rounded-md bg-white/5 p-2 text-white w-full"
-                  />
+                  <label className="flex flex-col text-sm text-gray-300">
+                    New Date
+                    <input
+                      type="date"
+                      value={rescheduleModal.date}
+                      onChange={e => setRescheduleModal(modal => ({ ...modal, date: e.target.value }))}
+                      className="mt-1 rounded-md bg-white/5 p-2 text-white"
+                    />
+                  </label>
+                  <label className="flex flex-col text-sm text-gray-300">
+                    New Time
+                    <input
+                      type="time"
+                      value={rescheduleModal.time}
+                      onChange={e => setRescheduleModal(modal => ({ ...modal, time: e.target.value }))}
+                      className="mt-1 rounded-md bg-white/5 p-2 text-white"
+                    />
+                  </label>
                 </div>
-
                 <div className="mt-4 flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setNoteModalOpen(false)
-                      setNoteBookingId(null)
-                      setNoteText('')
-                    }}
-                    className="rounded-lg bg-white/10 px-4 py-2"
-                  >
+                  <button onClick={closeRescheduleModal} className="rounded-lg bg-white/10 px-4 py-2">
                     Cancel
                   </button>
-                  <button
-                    onClick={() => handleSaveNotes(noteBookingId)}
-                    className="rounded-lg bg-amber-500 px-4 py-2 text-white"
-                  >
+                  <button onClick={handleRescheduleSave} className="rounded-lg bg-primary px-4 py-2 text-black font-semibold">
                     Save
                   </button>
                 </div>

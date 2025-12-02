@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
-const encryption_key = process.env.ENCRYPTION_KEY || 'dev_key_change_in_production_16chars'; // 16+ chars
+const rawKey = process.env.ENCRYPTION_KEY;
+if (!rawKey) {
+  throw new Error('ENCRYPTION_KEY environment variable is required');
+}
+const encryption_key = rawKey.padEnd(32, '0').slice(0, 32); // 16+ chars
 
 const SessionNoteSchema = new mongoose.Schema({
   booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },
