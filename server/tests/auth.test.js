@@ -1,7 +1,7 @@
 const request = require('supertest');
 const { app } = require('../index');
 const User = require('../models/User');
-const { setupTestDB, teardownTestDB } = require('./testSetup');
+const { setupTestDB, teardownTestDB, createTestUser } = require('./testSetup');
 
 describe('Auth API', () => {
   beforeAll(async () => {
@@ -20,15 +20,14 @@ describe('Auth API', () => {
       password: 'test123!'
     };
 
-    // Test signup
+    // Signup is disabled; the endpoint should return 403
     const signupRes = await request(app)
       .post('/api/auth/signup')
       .send(userData);
-    
-    expect(signupRes.status).toBe(200);
-    expect(signupRes.body).toHaveProperty('token');
-    expect(signupRes.body.user).toHaveProperty('id');
-    expect(signupRes.body.user.email).toBe(userData.email);
+    expect(signupRes.status).toBe(403);
+
+    // Create a user directly and then test login flow
+    const seeded = await createTestUser(userData);
 
     // Test login
     const loginRes = await request(app)
@@ -39,7 +38,8 @@ describe('Auth API', () => {
       });
     
     expect(loginRes.status).toBe(200);
-    expect(loginRes.body).toHaveProperty('token');
+    // API returns an accessToken property
+    expect(loginRes.body).toHaveProperty('accessToken');
     expect(loginRes.body.user.email).toBe(userData.email);
   });
 });

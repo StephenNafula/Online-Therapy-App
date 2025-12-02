@@ -51,7 +51,8 @@ describe('Bookings API', () => {
     expect(res.body).toHaveProperty('roomId');
     expect(res.body.client).toBe(client.id);
     expect(res.body.therapist).toBe(therapist.id);
-    expect(res.body.status).toBe('scheduled');
+    // Default booking status changed to 'pending' by default
+    expect(res.body.status).toBe('pending');
   }, 30000);
 
   it('should reject booking creation without therapistId', async () => {
