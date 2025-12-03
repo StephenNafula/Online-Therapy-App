@@ -25,15 +25,9 @@ async function dispatchWebhookEvent(eventType, payload) {
     
     for (const webhook of webhooks) {
       try {
-        // Create webhook payload with metadata
-        const webhookPayload = {
-          id: require('crypto').randomUUID(),
-          event: eventType,
-          timestamp,
-          data: payload,
-          // For security: include signature so receiver can verify authenticity
-          signature: createWebhookSignature(webhook.keyHash, eventType, timestamp, payload)
-        };
+        // For Zapier compatibility, send payload directly
+        // Zapier expects simple JSON with the data fields
+        const webhookPayload = payload;
 
         // POST to webhook URL with timeout
         const response = await axios.post(webhook.webhookUrl, webhookPayload, {
@@ -41,7 +35,6 @@ async function dispatchWebhookEvent(eventType, payload) {
           headers: {
             'Content-Type': 'application/json',
             'X-Webhook-Event': eventType,
-            'X-Webhook-Signature': webhookPayload.signature,
             'X-Webhook-Timestamp': timestamp
           }
         });

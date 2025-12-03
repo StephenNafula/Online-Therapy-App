@@ -261,20 +261,22 @@ router.post('/',
       // Dispatch webhook event for booking creation
       try {
         const populated = await Booking.findById(booking._id).populate('client', 'name email').populate('therapist', 'name email');
+        const sessionDateTime = formatSessionDateTime(booking, populated.therapist);
+        const durationHours = booking.durationMinutes >= 60 
+          ? `${Math.floor(booking.durationMinutes / 60)} hour${Math.floor(booking.durationMinutes / 60) > 1 ? 's' : ''}`
+          : `${booking.durationMinutes} minutes`;
+        
         await dispatchWebhookEvent('booking.created', {
+          email: populated.client.email,
+          client_name: populated.client.name,
+          service_name: 'Consultation',
+          booking_date: sessionDateTime.date,
+          booking_time: sessionDateTime.time,
+          duration: durationHours,
+          // Additional fields for internal use
           bookingId: booking._id.toString(),
-          client: {
-            id: populated.client._id.toString(),
-            name: populated.client.name,
-            email: populated.client.email
-          },
-          therapist: {
-            id: populated.therapist._id.toString(),
-            name: populated.therapist.name,
-            email: populated.therapist.email
-          },
-          scheduledAt: booking.scheduledAt.toISOString(),
-          durationMinutes: booking.durationMinutes,
+          therapist_name: populated.therapist.name,
+          therapist_email: populated.therapist.email,
           amount: booking.externalPayment?.amount,
           currency: booking.externalPayment?.currency
         });
@@ -394,21 +396,23 @@ router.post('/guest-booking', guestBookingLimiter,
       // Dispatch webhook event for booking creation
       try {
         const populated = await Booking.findById(booking._id).populate('client', 'name email').populate('therapist', 'name email');
+        const sessionDateTime = formatSessionDateTime(booking, populated.therapist);
+        const durationHours = booking.durationMinutes >= 60 
+          ? `${Math.floor(booking.durationMinutes / 60)} hour${Math.floor(booking.durationMinutes / 60) > 1 ? 's' : ''}`
+          : `${booking.durationMinutes} minutes`;
+        
         await dispatchWebhookEvent('booking.created', {
+          email: populated.client.email,
+          client_name: populated.client.name,
+          service_name: 'Consultation',
+          booking_date: sessionDateTime.date,
+          booking_time: sessionDateTime.time,
+          duration: durationHours,
+          // Additional fields for internal use
           bookingId: booking._id.toString(),
           isGuestBooking: true,
-          client: {
-            id: populated.client._id.toString(),
-            name: populated.client.name,
-            email: populated.client.email
-          },
-          therapist: {
-            id: populated.therapist._id.toString(),
-            name: populated.therapist.name,
-            email: populated.therapist.email
-          },
-          scheduledAt: booking.scheduledAt.toISOString(),
-          durationMinutes: booking.durationMinutes,
+          therapist_name: populated.therapist.name,
+          therapist_email: populated.therapist.email,
           amount: booking.externalPayment?.amount,
           currency: booking.externalPayment?.currency,
           paymentMethod: booking.externalPayment?.provider
