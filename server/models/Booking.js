@@ -16,6 +16,10 @@ const BookingSchema = new mongoose.Schema({
   notes: String,
   // Audio call related
   secureCallLink: String, // unique secure link for client to join call
+  secureCallTokenHash: String,
+  secureCallExpiresAt: Date,
+  secureCallUsed: { type: Boolean, default: false },
+  secureCallOneTime: { type: Boolean, default: true },
   callStartedAt: Date,
   callEndedAt: Date,
   callDuration: Number // in seconds

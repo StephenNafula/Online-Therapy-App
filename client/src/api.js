@@ -32,11 +32,12 @@ async function parseResponse(res) {
 }
 
 async function post(path, body, token){
+  const authToken = token || sessionStorage.getItem('stitch_session_token') || localStorage.getItem('token')
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
     },
     body: JSON.stringify(body)
   })
@@ -44,20 +45,22 @@ async function post(path, body, token){
 }
 
 async function get(path, token){
+  const authToken = token || sessionStorage.getItem('stitch_session_token') || localStorage.getItem('token')
   const res = await fetch(`${API}${path}`, {
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
     }
   })
   return parseResponse(res)
 }
 
 async function patch(path, body, token){
+  const authToken = token || sessionStorage.getItem('stitch_session_token') || localStorage.getItem('token')
   const res = await fetch(`${API}${path}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
     },
     body: JSON.stringify(body || {})
   })

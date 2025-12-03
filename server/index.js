@@ -8,6 +8,8 @@ const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const Booking = require('./models/Booking');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -25,6 +27,8 @@ const availabilityRoutes = require('./routes/availability');
 const sessionNotesRoutes = require('./routes/sessionNotes');
 const messagesRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
+const webhooksRoutes = require('./routes/webhooks');
+const { startReminderScheduler } = require('./utils/reminderScheduler');
 
 const app = express();
 const server = http.createServer(app);
@@ -97,6 +101,7 @@ app.use('/api/availability', availabilityRoutes);
 app.use('/api/session-notes', sessionNotesRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/webhooks', webhooksRoutes);
 
 io.on('connection', (socket) => {
   let socketUser = null;
@@ -116,11 +121,25 @@ io.on('connection', (socket) => {
     console.log('socket connected', socket.id, socketUser && socketUser.id);
   }
 
-  socket.on('join-room', (room) => {
+  socket.on('join-room', async (room) => {
     // Allow guests (no socketUser) to join
     if (!room) return;
+    // If socket.user is not set (JWT not provided), check for secure booking token
+    if (!socket.user && token) {
+      try {
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        // Attempt to atomically claim a one-time token for this room
+        const booking = await Booking.findOneAndUpdate({ roomId: room, secureCallTokenHash: tokenHash, secureCallExpiresAt: { $gte: new Date() }, secureCallUsed: false }, { $set: { secureCallUsed: true } }, { new: true });
+        if (booking) {
+          // Attach a lightweight user representation to the socket so server and others can identify
+          socket.user = { id: booking.client ? String(booking.client) : null, role: 'client', bookingId: String(booking._id) };
+        }
+      } catch (err) {
+        console.error('Error validating secure booking token', err);
+      }
+    }
     socket.join(room);
-    socket.to(room).emit('peer-joined', { socketId: socket.id });
+    socket.to(room).emit('peer-joined', { socketId: socket.id, user: socket.user && socket.user.id });
   });
 
   socket.on('signal', ({ room, data }) => {
@@ -184,6 +203,8 @@ if (require.main === module) {
       server.listen(PORT, () => {
         if (process.env.NODE_ENV !== 'test') {
           console.log(`Server listening on port ${PORT}`);
+          // Start booking reminder scheduler
+          startReminderScheduler(5 * 60 * 1000); // Run every 5 minutes
         }
       });
     } catch (err) {

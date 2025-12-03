@@ -109,7 +109,7 @@ const AudioVisualizer = ({ stream, isLocal, muted }) => {
 
       {/* Avatar Circle */}
       <div
-        className={`relative z-10 rounded-full bg-gray-800 border-4 ${isLocal ? 'border-gray-600 w-24 h-24' : 'border-primary w-48 h-48'} flex items-center justify-center shadow-2xl transition-transform duration-100`}
+        className={`relative z-10 rounded-full bg-gray-800 border-4 ${isLocal ? 'border-gray-600 w-16 h-16 sm:w-24 sm:h-24' : 'border-primary w-36 h-36 sm:w-48 sm:h-48'} flex items-center justify-center shadow-2xl transition-transform duration-100`}
         style={{ transform: `scale(${scale})` }}
       >
         <span className={`material-symbols-outlined ${isLocal ? 'text-4xl' : 'text-7xl'} ${muted ? 'text-red-400' : 'text-white'}`}>
@@ -150,6 +150,7 @@ export default function Meeting() {
   // Stream State for Visualizers
   const [localStreamForViz, setLocalStreamForViz] = useState(null)
   const [remoteStreamForViz, setRemoteStreamForViz] = useState(null)
+  const [joinedViaLink, setJoinedViaLink] = useState(false)
 
   const socketUrl =
     import.meta.env.VITE_SOCKET_URL ||
@@ -168,6 +169,8 @@ export default function Meeting() {
     // If queryToken exists, persist it temporarily in sessionStorage so it is available for handshake but not kept across devices/browsers
     if (queryToken) {
       try { sessionStorage.setItem(SESSION_TOKEN_KEY, queryToken) } catch (e) { console.warn('Could not set token in sessionStorage', e) }
+      // if the user didn't have a local token already, show that they joined via link
+      if (!localStorage.getItem('token')) setJoinedViaLink(true)
     }
 
     // Allow guest access - do not enforce token check
@@ -415,7 +418,7 @@ export default function Meeting() {
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white overflow-hidden">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-gray-800/50 backdrop-blur border-b border-white/10 z-10">
+      <header className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gray-800/50 backdrop-blur border-b border-white/10 z-10">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
           <h1 className="text-lg font-semibold tracking-wide">Secure Audio Session</h1>
@@ -450,6 +453,11 @@ export default function Meeting() {
           </div>
         ) : (
           <>
+            {joinedViaLink && (
+              <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-sm text-yellow-300">
+                <p className="text-sm">You joined via a secure link. Your session token is temporary.</p>
+              </div>
+            )}
             {/* Remote Participant (Main) */}
             <div className="flex flex-col items-center gap-6">
               <div className="relative">
@@ -492,7 +500,7 @@ export default function Meeting() {
       </main>
 
       {/* Control Bar */}
-      <footer className="h-24 bg-gray-800/50 backdrop-blur border-t border-white/10 flex items-center justify-center gap-6 z-10">
+      <footer className="h-20 sm:h-24 bg-gray-800/50 backdrop-blur border-t border-white/10 flex items-center justify-center gap-4 sm:gap-6 z-10">
         <button
           onClick={toggleMic}
           disabled={forceMuted}

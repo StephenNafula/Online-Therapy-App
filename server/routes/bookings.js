@@ -9,6 +9,7 @@ const { body, validationResult } = require('express-validator');
 const crypto = require('crypto');
 const AuditLog = require('../models/AuditLog');
 const PlatformSetting = require('../models/PlatformSetting');
+const { dispatchWebhookEvent } = require('../utils/webhookDispatcher');
 let nodemailer;
 try { nodemailer = require('nodemailer'); } catch (e) { nodemailer = null; }
 // lightweight room id generator to avoid ESM-only nanoid in this environment
@@ -257,6 +258,29 @@ router.post('/',
       } catch (emitErr) {
         console.error('Failed to emit booking created', emitErr);
       }
+      // Dispatch webhook event for booking creation
+      try {
+        const populated = await Booking.findById(booking._id).populate('client', 'name email').populate('therapist', 'name email');
+        await dispatchWebhookEvent('booking.created', {
+          bookingId: booking._id.toString(),
+          client: {
+            id: populated.client._id.toString(),
+            name: populated.client.name,
+            email: populated.client.email
+          },
+          therapist: {
+            id: populated.therapist._id.toString(),
+            name: populated.therapist.name,
+            email: populated.therapist.email
+          },
+          scheduledAt: booking.scheduledAt.toISOString(),
+          durationMinutes: booking.durationMinutes,
+          amount: booking.externalPayment?.amount,
+          currency: booking.externalPayment?.currency
+        });
+      } catch (webhookErr) {
+        console.error('Failed to dispatch booking.created webhook', webhookErr);
+      }
       res.json(booking);
     } catch (err) {
       console.error(err);
@@ -366,6 +390,31 @@ router.post('/guest-booking', guestBookingLimiter,
         }
       } catch (emitErr) {
         console.error('Failed to emit guest booking created', emitErr);
+      }
+      // Dispatch webhook event for booking creation
+      try {
+        const populated = await Booking.findById(booking._id).populate('client', 'name email').populate('therapist', 'name email');
+        await dispatchWebhookEvent('booking.created', {
+          bookingId: booking._id.toString(),
+          isGuestBooking: true,
+          client: {
+            id: populated.client._id.toString(),
+            name: populated.client.name,
+            email: populated.client.email
+          },
+          therapist: {
+            id: populated.therapist._id.toString(),
+            name: populated.therapist.name,
+            email: populated.therapist.email
+          },
+          scheduledAt: booking.scheduledAt.toISOString(),
+          durationMinutes: booking.durationMinutes,
+          amount: booking.externalPayment?.amount,
+          currency: booking.externalPayment?.currency,
+          paymentMethod: booking.externalPayment?.provider
+        });
+      } catch (webhookErr) {
+        console.error('Failed to dispatch guest booking.created webhook', webhookErr);
       }
 
       // Send manual payment instructions email
@@ -518,6 +567,16 @@ router.post('/:id/verify-payment', auth(true), async (req, res) => {
     try {
       if (!booking.secureCallLink || override) {
         const token = crypto.randomBytes(24).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        // Token expiry: default to scheduledAt + 2h (safe window); override with settings if provided
+        const settings = await getSettingsDoc();
+        const scheduledAt = booking.scheduledAt ? new Date(booking.scheduledAt) : new Date();
+        const expiryMs = 2 * 60 * 60 * 1000; // 2 hours
+        const expiresAt = new Date(scheduledAt.getTime() + expiryMs);
+        booking.secureCallTokenHash = tokenHash;
+        booking.secureCallExpiresAt = expiresAt;
+        booking.secureCallUsed = false;
+        booking.secureCallOneTime = true;
         const clientOrigin = process.env.CLIENT_ORIGIN || process.env.CORS_ORIGIN || 'http://localhost:5173';
         booking.secureCallLink = `${clientOrigin.replace(/\/$/, '')}/meeting/${booking.roomId}?token=${token}`;
       }
@@ -542,6 +601,33 @@ router.post('/:id/verify-payment', auth(true), async (req, res) => {
       }
     } catch (emitErr) {
       console.error('Failed to emit booking updated after verify', emitErr);
+    }
+
+    // Dispatch webhook event for payment verification
+    try {
+      const populated = await Booking.findById(booking._id).populate('client', 'name email').populate('therapist', 'name email');
+      await dispatchWebhookEvent('booking.payment_verified', {
+        bookingId: booking._id.toString(),
+        client: {
+          id: populated.client._id.toString(),
+          name: populated.client.name,
+          email: populated.client.email
+        },
+        therapist: {
+          id: populated.therapist._id.toString(),
+          name: populated.therapist.name,
+          email: populated.therapist.email
+        },
+        scheduledAt: booking.scheduledAt.toISOString(),
+        durationMinutes: booking.durationMinutes,
+        amount: booking.externalPayment?.amount,
+        currency: booking.externalPayment?.currency,
+        paymentProvider: booking.externalPayment?.provider,
+        paymentReference: booking.externalPayment?.reference,
+        secureCallLink: booking.secureCallLink
+      });
+    } catch (webhookErr) {
+      console.error('Failed to dispatch booking.payment_verified webhook', webhookErr);
     }
 
     // Send confirmation email with secure link
